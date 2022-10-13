@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/wangdayong228/cns-backend/controllers"
-	"github.com/wangdayong228/cns-backend/utils/ginutils"
+	"github.com/wangdayong228/conflux-pay/controllers"
+	"github.com/wangdayong228/conflux-pay/utils/ginutils"
 )
 
 func SetupRoutes(router *gin.Engine) {
