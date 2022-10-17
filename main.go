@@ -7,25 +7,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"github.com/wangdayong228/conflux-pay/logger"
+	_ "github.com/wangdayong228/conflux-pay/logger"
 	"github.com/wangdayong228/conflux-pay/middlewares"
 	"github.com/wangdayong228/conflux-pay/models"
 	"github.com/wangdayong228/conflux-pay/routers"
+
 	// "github.com/wangdayong228/conflux-pay/routers/assets"
 	// "github.com/wangdayong228/conflux-pay/services"
+	_ "github.com/wangdayong228/conflux-pay/config"
 )
-
-func initConfig() {
-	viper.SetConfigName("config")             // name of config file (without extension)
-	viper.SetConfigType("yaml")               // REQUIRED if the config file does not have the extension in the name
-	viper.AddConfigPath("/etc/rainbow_api/")  // path to look for the config file in
-	viper.AddConfigPath("$HOME/.rainbow_api") // call multiple times to add many search paths
-	viper.AddConfigPath(".")                  // optionally look for config in the working directory
-	err := viper.ReadInConfig()               // Find and read the config file
-	if err != nil {                           // Handle errors reading the config file
-		log.Fatalln(fmt.Errorf("fatal error config file: %w", err))
-	}
-}
 
 func initGin() *gin.Engine {
 	engine := gin.New()
@@ -36,13 +26,13 @@ func initGin() *gin.Engine {
 	return engine
 }
 
-func init() {
-	initConfig()
-	logger.Init()
-	// middlewares.InitOpenJwtMiddleware()
-	// middlewares.InitRateLimitMiddleware()
-	logrus.Info("init done")
-}
+// func init() {
+// initConfig()
+// logger.Init()
+// middlewares.InitOpenJwtMiddleware()
+// middlewares.InitRateLimitMiddleware()
+// logrus.Info("init done")
+// }
 
 // @title       Rainbow-API
 // @version     1.0

@@ -14,10 +14,25 @@ func SetupRoutes(router *gin.Engine) {
 	api := router.Group("v0")
 	{
 		order := api.Group("orders")
-		order.POST("/", controllers.MakeOrder)
+		{
+			order.GET("summary/:trade_no", controllers.GetOrderSummary) //provider maybe wechat/alipay
+			wechat := order.Group("wechat")
+			{
+				ctrl := controllers.WechatOrderCtrl{}
+				wechat.POST("/:trade_type", ctrl.MakeOrder)
+				wechat.GET("/:trade_no", ctrl.GetOrder)
+			}
+			alipay := order.Group("alipay")
+			{
+				ctrl := controllers.AlipayOrderCtrl{}
+				alipay.POST("/:trade_type", ctrl.MakeOrder)
+				wechat.GET("/:trade_no", ctrl.GetOrder)
+			}
+		}
+
 	}
 }
 
 func indexEndpoint(c *gin.Context) {
-	c.JSON(http.StatusOK, ginutils.DataResponse("CNS_BACKEND"))
+	c.JSON(http.StatusOK, ginutils.DataResponse("CONFLUX_PAY"))
 }

@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	rainbow_errors "github.com/wangdayong228/conflux-pay/errors"
+	rainbow_errors "github.com/wangdayong228/conflux-pay/pay_errors"
 	"github.com/wangdayong228/conflux-pay/utils/ginutils"
 )
 

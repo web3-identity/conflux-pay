@@ -1,0 +1,16 @@
+company:
+  mchId: df
+  mchCertNo: ddd
+  mchAPIv3Key: sss
+  mchPrivateKey: ddd
+apps:
+  cns:
+    appId: cns-appid
+    appSecret: cns-app-secret
+    appInternalID: 1
+  rainbow:
+    appId: rainbow-appid
+    appSecret: rainbow-app-secret
+    appInternalID: 2
+order:
+  notify_url_base: https://www.baidu.com/

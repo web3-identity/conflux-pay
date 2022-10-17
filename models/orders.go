@@ -1,29 +1,85 @@
 package models
 
-type TradeType uint
+import (
+	"time"
 
-const (
-	TRADE_TYPE_NATIVE = iota + 1
-	TRADE_TYPE_H5
-)
-
-type TradeState uint
-
-const (
-	TRADE_STATE_SUCCESSS = iota + 1
-	TRADE_STATE_REFUND
-	TRADE_STATE_NOTPAY
-	TRADE_STATE_CLOSED
-	TRADE_STATE_REVOKED
-	TRADE_STATE_USERPAYING
-	TRADE_STATE_PAYERROR
+	"github.com/wangdayong228/conflux-pay/models/enums"
+	"github.com/wechatpay-apiv3/wechatpay-go/services/payments"
 )
 
 type Order struct {
 	BaseModel
-	Commithash string     `gorm:"type:varchar(256)" json:"commit_hash"`
-	PayChannel string     `gorm:"type:varchar(256)" json:"pay_channel"`
-	TradeType  TradeType  `gorm:"uint" json:"trade_type"`
-	TradeState TradeState `gorm:"uint" json:"trade_state"`
-	Amount     uint       `gorm:"uint" json:"amount"` // 单位为分
+	Provider    enums.TradeProvider `gorm:"uint" json:"trade_provider"`
+	TradeNo     string              `gorm:"type:varchar(32);uniqueIndex" json:"trade_no"`
+	TradeType   enums.TradeType     `gorm:"uint" json:"trade_type"`
+	TradeState  enums.TradeState    `gorm:"uint" json:"trade_state"`
+	Amount      uint                `gorm:"uint" json:"amount"` // 单位为分
+	Description *string             `gorm:"type:varchar(256)" json:"description"`
+	TimeExpire  *time.Time          `json:"time_expire,omitempty"`
+	CodeUrl     *string             `gorm:"type:varchar(256)" json:"code_url,omitempty"`
+	H5Url       *string             `gorm:"type:varchar(256)" json:"h5_url,omitempty"`
+}
+
+func FindOrderByTradeNo(tradeNo string) (*Order, error) {
+	o := Order{
+		TradeNo: tradeNo,
+	}
+	return &o, GetDB().First(&o).Error
+}
+
+type WechatOrderDetail struct {
+	Amount         uint    `gorm:"type:varchar(32);" json:"amount,omitempty"`
+	Appid          *string `gorm:"type:varchar(32);" json:"appid,omitempty"`
+	Attach         *string `gorm:"type:varchar(32);" json:"attach,omitempty"`
+	BankType       *string `gorm:"type:varchar(32);" json:"bank_type,omitempty"`
+	Mchid          *string `gorm:"type:varchar(32);" json:"mchid,omitempty"`
+	TradeNo        *string `gorm:"type:varchar(32);" json:"trade_no,omitempty"`
+	Payer          *string `gorm:"type:varchar(32);" json:"payer,omitempty"`
+	SuccessTime    *string `gorm:"type:varchar(32);" json:"success_time,omitempty"`
+	TradeState     *string `gorm:"type:varchar(32);" json:"trade_state,omitempty"`
+	TradeStateDesc *string `gorm:"type:varchar(256);" json:"trade_state_desc,omitempty"`
+	TradeType      *string `gorm:"type:varchar(32);" json:"trade_type,omitempty"`
+	TransactionId  *string `gorm:"type:varchar(32);" json:"transaction_id,omitempty"`
+	// PromotionDetail []PromotionDetail `json:"promotion_detail,omitempty"`
+}
+
+// func (w *WechatOrderDetail) ToOrder() (*Order, error) {
+// 	p := enums.TRADE_PROVIDER_WECHAT
+// 	tradeState, ok := enums.ParseTradeState(*w.TradeState)
+// 	if !ok {
+// 		return nil, fmt.Errorf("unknown trade_state %v", tradeState)
+// 	}
+
+// 	tradeType, ok := enums.ParseTradeState(*w.TradeType)
+// 	if !ok {
+// 		return nil, fmt.Errorf("unknown trade_type %v", tradeType)
+// 	}
+
+// }
+
+func FindWechatOrderDetailByTradeNo(tradeNo string) (*WechatOrderDetail, error) {
+	o := WechatOrderDetail{
+		TradeNo: &tradeNo,
+	}
+	return &o, GetDB().First(&o).Error
+}
+
+func NewWechatOrderDetailByRaw(raw *payments.Transaction) *WechatOrderDetail {
+	return &WechatOrderDetail{
+		Amount:         uint(*raw.Amount.Total),
+		Appid:          raw.Appid,
+		Attach:         raw.Attach,
+		BankType:       raw.BankType,
+		Mchid:          raw.Mchid,
+		TradeNo:        raw.OutTradeNo,
+		Payer:          raw.Payer.Openid,
+		SuccessTime:    raw.SuccessTime,
+		TradeState:     raw.TradeState,
+		TradeStateDesc: raw.TradeStateDesc,
+		TradeType:      raw.TradeType,
+		TransactionId:  raw.TransactionId,
+	}
+}
+
+type AlipayOrderDetail struct {
 }
