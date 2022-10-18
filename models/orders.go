@@ -43,20 +43,6 @@ type WechatOrderDetail struct {
 	// PromotionDetail []PromotionDetail `json:"promotion_detail,omitempty"`
 }
 
-// func (w *WechatOrderDetail) ToOrder() (*Order, error) {
-// 	p := enums.TRADE_PROVIDER_WECHAT
-// 	tradeState, ok := enums.ParseTradeState(*w.TradeState)
-// 	if !ok {
-// 		return nil, fmt.Errorf("unknown trade_state %v", tradeState)
-// 	}
-
-// 	tradeType, ok := enums.ParseTradeState(*w.TradeType)
-// 	if !ok {
-// 		return nil, fmt.Errorf("unknown trade_type %v", tradeType)
-// 	}
-
-// }
-
 func FindWechatOrderDetailByTradeNo(tradeNo string) (*WechatOrderDetail, error) {
 	o := WechatOrderDetail{
 		TradeNo: &tradeNo,

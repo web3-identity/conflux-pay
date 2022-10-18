@@ -41,8 +41,9 @@ func ConnectDB() {
 	}
 
 	// Migrate the schema
-	// db.AutoMigrate(&User{})
-
+	db.AutoMigrate(&User{})
+	db.AutoMigrate(&Order{})
+	db.AutoMigrate(&WechatOrderDetail{})
 }
 
 func GetDB() *gorm.DB {

@@ -7,21 +7,20 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	_ "github.com/wangdayong228/conflux-pay/config"
 	_ "github.com/wangdayong228/conflux-pay/logger"
 	"github.com/wangdayong228/conflux-pay/middlewares"
 	"github.com/wangdayong228/conflux-pay/models"
 	"github.com/wangdayong228/conflux-pay/routers"
-
 	// "github.com/wangdayong228/conflux-pay/routers/assets"
 	// "github.com/wangdayong228/conflux-pay/services"
-	_ "github.com/wangdayong228/conflux-pay/config"
 )
 
 func initGin() *gin.Engine {
 	engine := gin.New()
 	engine.Use(gin.Logger())
 	engine.Use(middlewares.Logger())
-	// engine.Use(gin.Recovery())
+	engine.Use(gin.Recovery())
 	engine.Use(middlewares.Recovery())
 	return engine
 }
@@ -48,7 +47,8 @@ func main() {
 	models.ConnectDB()
 
 	app := initGin()
-	app.Use(middlewares.RateLimitMiddleware)
+	// var _ config.App
+	// app.Use(middlewares.RateLimitMiddleware)
 	routers.SetupRoutes(app)
 
 	port := viper.GetString("port")

@@ -23,6 +23,6 @@ func (w *WechatOrderCtrl) MakeOrder(c *gin.Context) {
 
 func (w *WechatOrderCtrl) GetOrder(c *gin.Context) {
 	trandeNo := c.Param("trade_no")
-	o, err := w.service.GetOrderDetail(trandeNo)
+	o, err := w.service.GetOrderDetailAndSave(trandeNo)
 	ginutils.RenderResp(c, o, err)
 }

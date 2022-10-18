@@ -19,7 +19,7 @@ type WechatOrderService struct {
 type MakeWechatOrderReq struct {
 	TradeType   enums.TradeType `json:"trade_type"`
 	Description *string         `json:"description"`
-	TimeExpire  *time.Time      `json:"time_expire,omitempty"`
+	TimeExpire  int64           `json:"time_expire,omitempty"`
 	Amount      int64           `json:"amount"`
 }
 
@@ -51,13 +51,16 @@ func (w *WechatOrderService) MakeOrder(appName string, req MakeWechatOrderReq) (
 	app := config.MustGetApp(appName)
 	no := genTradeNo(app.AppInternalID, enums.TRADE_PROVIDER_WECHAT)
 
+	expire := time.Unix(req.TimeExpire, 0)
+	notifyUrl := "https://www.baidu.com"
 	prepayReq := PrepayRequest{
 		Appid:       &app.AppId,
 		Mchid:       &config.CompanyVal.MchID,
 		Description: req.Description,
 		OutTradeNo:  &no,
-		TimeExpire:  req.TimeExpire,
+		TimeExpire:  &expire,
 		Amount:      &native.Amount{Total: &req.Amount},
+		NotifyUrl:   &notifyUrl,
 	}
 
 	orderResp := &MakeOrderResp{
@@ -85,39 +88,21 @@ func (w *WechatOrderService) MakeOrder(appName string, req MakeWechatOrderReq) (
 	}
 
 	// save db
-	models.GetDB().Save(models.Order{
+	models.GetDB().Save(&models.Order{
 		Provider:    enums.TRADE_PROVIDER_WECHAT,
 		TradeNo:     no,
 		TradeType:   req.TradeType,
 		TradeState:  enums.TRADE_STATE_NOTPAY,
 		Amount:      uint(req.Amount),
 		Description: req.Description,
-		TimeExpire:  req.TimeExpire,
+		TimeExpire:  &expire,
 		CodeUrl:     orderResp.CodeUrl,
 		H5Url:       orderResp.H5Url,
 	})
 	return orderResp, nil
 }
 
-// 数据库查询，如果状态未稳定，wechatpay查询
-// TODO: 优化策略
-// 1. 在微信主动通知平均时间内直接返回NOTPAY,之后如果还未收到notify，主动查询
-// 2. 或者 开启异步同步结果服务
-func (w *WechatOrderService) GetOrderSummary(tradeNo string) (*models.Order, error) {
-	o, err := models.FindOrderByTradeNo(tradeNo)
-	if err != nil {
-		return nil, err
-	}
-	if o.TradeState.IsStable() {
-		return o, nil
-	}
-
-	w.GetOrderDetail(tradeNo)
-
-	return nil, nil
-}
-
-func (w *WechatOrderService) GetOrderDetail(tradeNo string) (*models.WechatOrderDetail, error) {
+func (w *WechatOrderService) GetOrderDetailAndSave(tradeNo string) (*models.WechatOrderDetail, error) {
 	o, err := models.FindOrderByTradeNo(tradeNo)
 	if err != nil {
 		return nil, err

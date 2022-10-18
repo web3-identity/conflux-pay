@@ -14,3 +14,6 @@ apps:
     appInternalID: 2
 order:
   notify_url_base: https://www.baidu.com/
+log:
+  level: trace # trace,debug,info,warn,error,fatal,panic
+  folder: /Users/dayong/myspace/mywork/conflux-pay/.log

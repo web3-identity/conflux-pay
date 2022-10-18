@@ -52,6 +52,7 @@ func init() {
 	rainbowErrorInfos[ERR_NO_SPONSOR_FOR_USER] = RainbowErrorInfo{"Contract has no sponsor for application admin", HTTP_STATUS_BUSINESS_ERROR}
 	rainbowErrorInfos[ERR_NO_PERMISSION_TO_UPDATE_ADMIN] = RainbowErrorInfo{"Only admin can reset admin", HTTP_STATUS_BUSINESS_ERROR}
 	rainbowErrorInfos[ERR_CONTRACT_NOT_OWNED_BY_APP] = RainbowErrorInfo{"Contract is not belong to this application", HTTP_STATUS_BUSINESS_ERROR}
+	rainbowErrorInfos[ERR_PROVIDER_UNSUPPORT] = RainbowErrorInfo{"Provider is unsupport", HTTP_STATUS_BUSINESS_ERROR}
 }
 
 const (
@@ -118,6 +119,7 @@ const (
 	ERR_UPLOADE_FILE_LIMIT_EXCEEDED
 	ERR_NO_PERMISSION_TO_UPDATE_ADMIN
 	ERR_CONTRACT_NOT_OWNED_BY_APP
+	ERR_PROVIDER_UNSUPPORT
 )
 
 func GetRainbowOthersErrCode(httpStatusCode int) int {
