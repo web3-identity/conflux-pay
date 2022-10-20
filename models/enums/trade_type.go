@@ -15,7 +15,7 @@ var (
 )
 
 var (
-	UnkownTradeType = errors.New("unknown trade type")
+	ErrUnkownTradeType = errors.New("unknown trade type")
 )
 
 func init() {

@@ -20,6 +20,7 @@ func SetupRoutes(router *gin.Engine) {
 			{
 				ctrl := controllers.WechatOrderCtrl{}
 				wechat.POST("/", ctrl.MakeOrder)
+				wechat.POST("/refresh-url/:trade_no", ctrl.RefreshPayUrl)
 				wechat.GET("/:trade_no", ctrl.GetOrder)
 			}
 			alipay := order.Group("alipay")

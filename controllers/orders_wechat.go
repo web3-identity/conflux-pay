@@ -11,8 +11,18 @@ type WechatOrderCtrl struct {
 	service services.WechatOrderService
 }
 
+// @Tags        Orders
+// @ID          MakeOrder
+// @Summary     Make Order
+// @Description make order
+// @Produce     json
+// @Param       wecaht_ord_req body     services.MakeWechatOrderReq true "make_wechat_order_req"
+// @Success     200            {object} models.Order
+// @Failure     400            {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
+// @Failure     500            {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
+// @Router      /orders/wechat [post]
 func (w *WechatOrderCtrl) MakeOrder(c *gin.Context) {
-	req := services.MakeWechatOrderReq{}
+	req := services.MakeOrderReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		ginutils.RenderRespError(c, err, cns_errors.ERR_INVALID_REQUEST_COMMON)
 	}
@@ -21,6 +31,32 @@ func (w *WechatOrderCtrl) MakeOrder(c *gin.Context) {
 	ginutils.RenderResp(c, resp, err)
 }
 
+// @Tags        Orders
+// @ID          RefreshPayUrl
+// @Summary     refresh pay url
+// @Description refresh pay url
+// @Produce     json
+// @Param       trade_no path     string true "trade no"
+// @Success     200      {object} services.MakeOrderResp
+// @Failure     400      {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
+// @Failure     500      {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
+// @Router      /orders/wechat/refresh-url/{trade_no} [post]
+func (w *WechatOrderCtrl) RefreshPayUrl(c *gin.Context) {
+	trandeNo := c.Param("trade_no")
+	o, err := w.service.RefreshUrl(trandeNo)
+	ginutils.RenderResp(c, o, err)
+}
+
+// @Tags        Orders
+// @ID          QueryWechatOrderDetail
+// @Summary     query order by trade no
+// @Description query order by trade no
+// @Produce     json
+// @Param       trade_no path     string true "trade no"
+// @Success     200      {object} models.WechatOrderDetail
+// @Failure     400      {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
+// @Failure     500      {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
+// @Router      /orders/wechat/{trade_no} [get]
 func (w *WechatOrderCtrl) GetOrder(c *gin.Context) {
 	trandeNo := c.Param("trade_no")
 	o, err := w.service.GetOrderDetailAndSave(trandeNo)

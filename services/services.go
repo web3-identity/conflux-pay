@@ -21,7 +21,7 @@ var (
 	wxH5Service     h5.H5ApiService
 )
 
-func init() {
+func Init() {
 	var err error
 	if wxClient, err = newWechatClient(); err != nil {
 		logrus.WithError(err).Panic("failed creat wechat client")

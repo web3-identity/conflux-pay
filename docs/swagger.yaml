@@ -1,0 +1,241 @@
+basePath: /v0
+definitions:
+  cns_errors.RainbowErrorDetailInfo:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  models.Order:
+    properties:
+      amount:
+        description: 单位为分
+        type: integer
+      appName:
+        type: string
+      code_url:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      h5_url:
+        type: string
+      id:
+        type: integer
+      time_expire:
+        type: string
+      trade_no:
+        type: string
+      trade_provider:
+        type: integer
+      trade_state:
+        type: integer
+      trade_type:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.WechatOrderDetail:
+    properties:
+      amount:
+        type: integer
+      appid:
+        type: string
+      attach:
+        type: string
+      bank_type:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      mchid:
+        type: string
+      payer:
+        type: string
+      success_time:
+        type: string
+      trade_no:
+        type: string
+      trade_state:
+        type: string
+      trade_state_desc:
+        type: string
+      trade_type:
+        type: string
+      transaction_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  services.MakeOrderResp:
+    properties:
+      code_url:
+        type: string
+      h5_url:
+        type: string
+      trade_no:
+        type: string
+      trade_provider:
+        type: integer
+      trade_type:
+        type: integer
+    type: object
+  services.MakeWechatOrderReq:
+    properties:
+      amount:
+        type: integer
+      description:
+        type: string
+      time_expire:
+        type: integer
+      trade_type:
+        type: integer
+    required:
+    - amount
+    - description
+    - time_expire
+    - trade_type
+    type: object
+host: 127.0.0.1:8080
+info:
+  contact: {}
+  description: The responses of the open api in swagger focus on the data field rather
+    than the code and the message fields
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Rainbow-API
+  version: "1.0"
+paths:
+  /orders/summary/{trade_no}:
+    get:
+      description: query order summary by trade no
+      operationId: QueryOrderSummary
+      parameters:
+      - description: trade no
+        in: path
+        name: trade_no
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Order'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+      summary: query order summary by trade no
+      tags:
+      - Orders
+  /orders/wechat:
+    post:
+      description: make order
+      operationId: MakeOrder
+      parameters:
+      - description: make_wechat_order_req
+        in: body
+        name: wecaht_ord_req
+        required: true
+        schema:
+          $ref: '#/definitions/services.MakeWechatOrderReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Order'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+      summary: Make Order
+      tags:
+      - Orders
+  /orders/wechat/{trade_no}:
+    get:
+      description: query order by trade no
+      operationId: QueryWechatOrderDetail
+      parameters:
+      - description: trade no
+        in: path
+        name: trade_no
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.WechatOrderDetail'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+      summary: query order by trade no
+      tags:
+      - Orders
+  /orders/wechat/refresh-url/{trade_no}:
+    post:
+      description: refresh pay url
+      operationId: RefreshPayUrl
+      parameters:
+      - description: trade no
+        in: path
+        name: trade_no
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/services.MakeOrderResp'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+      summary: refresh pay url
+      tags:
+      - Orders
+schemes:
+- http
+- https
+swagger: "2.0"

@@ -9,6 +9,11 @@ import (
 
 type Order struct {
 	BaseModel
+	OrderCore
+}
+
+type OrderCore struct {
+	AppName     string              `gorm:"type:varchar(32)"`
 	Provider    enums.TradeProvider `gorm:"uint" json:"trade_provider"`
 	TradeNo     string              `gorm:"type:varchar(32);uniqueIndex" json:"trade_no"`
 	TradeType   enums.TradeType     `gorm:"uint" json:"trade_type"`
@@ -21,13 +26,13 @@ type Order struct {
 }
 
 func FindOrderByTradeNo(tradeNo string) (*Order, error) {
-	o := Order{
-		TradeNo: tradeNo,
-	}
-	return &o, GetDB().First(&o).Error
+	o := Order{}
+	o.TradeNo = tradeNo
+	return &o, GetDB().Where(&o).First(&o).Error
 }
 
 type WechatOrderDetail struct {
+	BaseModel
 	Amount         uint    `gorm:"type:varchar(32);" json:"amount,omitempty"`
 	Appid          *string `gorm:"type:varchar(32);" json:"appid,omitempty"`
 	Attach         *string `gorm:"type:varchar(32);" json:"attach,omitempty"`
@@ -47,10 +52,14 @@ func FindWechatOrderDetailByTradeNo(tradeNo string) (*WechatOrderDetail, error) 
 	o := WechatOrderDetail{
 		TradeNo: &tradeNo,
 	}
-	return &o, GetDB().First(&o).Error
+	return &o, GetDB().Where(&o).First(&o).Error
 }
 
 func NewWechatOrderDetailByRaw(raw *payments.Transaction) *WechatOrderDetail {
+	payer := (*string)(nil)
+	if raw.Payer != nil {
+		payer = raw.Payer.Openid
+	}
 	return &WechatOrderDetail{
 		Amount:         uint(*raw.Amount.Total),
 		Appid:          raw.Appid,
@@ -58,7 +67,7 @@ func NewWechatOrderDetailByRaw(raw *payments.Transaction) *WechatOrderDetail {
 		BankType:       raw.BankType,
 		Mchid:          raw.Mchid,
 		TradeNo:        raw.OutTradeNo,
-		Payer:          raw.Payer.Openid,
+		Payer:          payer,
 		SuccessTime:    raw.SuccessTime,
 		TradeState:     raw.TradeState,
 		TradeStateDesc: raw.TradeStateDesc,

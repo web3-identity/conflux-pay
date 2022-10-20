@@ -1,0 +1,9 @@
+generatorName: go
+# outputDir: /Users/dayong/myspace/mytemp/test-openapi-generator/test-go/out
+inputSpec: docs/swagger.json
+# templateDir: /Users/dayong/myspace/mywork/openapi-generator/modules/openapi-generator/src/main/resources/go
+additionalProperties:
+  enumClassPrefix: "true"
+  packageName: confluxpay
+  disallowAdditionalPropertiesIfNotPresent: false
+  generateInterfaces: true

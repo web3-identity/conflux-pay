@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func init() {
+func Init() {
 	logrus.SetLevel(level())
 	logrus.SetReportCaller(true)
 	logrus.SetFormatter(&logrus.JSONFormatter{})

@@ -1,3 +1,5 @@
+environment: development
+port: 8080
 company:
   mchId: df
   mchCertNo: ddd
@@ -14,6 +16,12 @@ apps:
     appInternalID: 2
 order:
   notify_url_base: https://www.baidu.com/
+mysql:
+  host: localhost
+  port: 3306
+  user: root
+  password: new-password
+  db: conflux_pay_test
 log:
   level: trace # trace,debug,info,warn,error,fatal,panic
   folder: /Users/dayong/myspace/mywork/conflux-pay/.log

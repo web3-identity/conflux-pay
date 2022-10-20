@@ -1,0 +1,360 @@
+{
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "The responses of the open api in swagger focus on the data field rather than the code and the message fields",
+        "title": "Rainbow-API",
+        "contact": {},
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "127.0.0.1:8080",
+    "basePath": "/v0",
+    "paths": {
+        "/orders/summary/{trade_no}": {
+            "get": {
+                "description": "query order summary by trade no",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "query order summary by trade no",
+                "operationId": "QueryOrderSummary",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "trade no",
+                        "name": "trade_no",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Order"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server error",
+                        "schema": {
+                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/wechat": {
+            "post": {
+                "description": "make order",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Make Order",
+                "operationId": "MakeOrder",
+                "parameters": [
+                    {
+                        "description": "make_wechat_order_req",
+                        "name": "wecaht_ord_req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/services.MakeWechatOrderReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Order"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server error",
+                        "schema": {
+                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/wechat/refresh-url/{trade_no}": {
+            "post": {
+                "description": "refresh pay url",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "refresh pay url",
+                "operationId": "RefreshPayUrl",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "trade no",
+                        "name": "trade_no",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/services.MakeOrderResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server error",
+                        "schema": {
+                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/wechat/{trade_no}": {
+            "get": {
+                "description": "query order by trade no",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "query order by trade no",
+                "operationId": "QueryWechatOrderDetail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "trade no",
+                        "name": "trade_no",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.WechatOrderDetail"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server error",
+                        "schema": {
+                            "$ref": "#/definitions/cns_errors.RainbowErrorDetailInfo"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "cns_errors.RainbowErrorDetailInfo": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "gorm.DeletedAt": {
+            "type": "object",
+            "properties": {
+                "time": {
+                    "type": "string"
+                },
+                "valid": {
+                    "description": "Valid is true if Time is not NULL",
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.Order": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "description": "单位为分",
+                    "type": "integer"
+                },
+                "appName": {
+                    "type": "string"
+                },
+                "code_url": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "h5_url": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "time_expire": {
+                    "type": "string"
+                },
+                "trade_no": {
+                    "type": "string"
+                },
+                "trade_provider": {
+                    "type": "integer"
+                },
+                "trade_state": {
+                    "type": "integer"
+                },
+                "trade_type": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.WechatOrderDetail": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "appid": {
+                    "type": "string"
+                },
+                "attach": {
+                    "type": "string"
+                },
+                "bank_type": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "mchid": {
+                    "type": "string"
+                },
+                "payer": {
+                    "type": "string"
+                },
+                "success_time": {
+                    "type": "string"
+                },
+                "trade_no": {
+                    "type": "string"
+                },
+                "trade_state": {
+                    "type": "string"
+                },
+                "trade_state_desc": {
+                    "type": "string"
+                },
+                "trade_type": {
+                    "type": "string"
+                },
+                "transaction_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "services.MakeOrderResp": {
+            "type": "object",
+            "properties": {
+                "code_url": {
+                    "type": "string"
+                },
+                "h5_url": {
+                    "type": "string"
+                },
+                "trade_no": {
+                    "type": "string"
+                },
+                "trade_provider": {
+                    "type": "integer"
+                },
+                "trade_type": {
+                    "type": "integer"
+                }
+            }
+        },
+        "services.MakeWechatOrderReq": {
+            "type": "object",
+            "required": [
+                "amount",
+                "description",
+                "time_expire",
+                "trade_type"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "time_expire": {
+                    "type": "integer"
+                },
+                "trade_type": {
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}
