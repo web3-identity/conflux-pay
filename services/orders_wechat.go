@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -10,23 +11,25 @@ import (
 	"github.com/wangdayong228/conflux-pay/models"
 	"github.com/wangdayong228/conflux-pay/models/enums"
 	cns_errors "github.com/wangdayong228/conflux-pay/pay_errors"
+	"github.com/wechatpay-apiv3/wechatpay-go/core"
 	"github.com/wechatpay-apiv3/wechatpay-go/services/payments/h5"
 	"github.com/wechatpay-apiv3/wechatpay-go/services/payments/native"
+	"github.com/wechatpay-apiv3/wechatpay-go/services/refunddomestic"
 )
 
 type WechatOrderService struct {
 }
 
 type MakeOrderReq struct {
-	TradeType   enums.TradeType `json:"trade_type" binding:"required"`
+	TradeType   enums.TradeType `json:"trade_type" binding:"required" swaggertype:"string"`
 	Description *string         `json:"description" binding:"required"`
 	TimeExpire  int64           `json:"time_expire,omitempty" binding:"required"`
 	Amount      int64           `json:"amount" binding:"required"`
 }
 
 type MakeOrderResp struct {
-	TradeProvider enums.TradeProvider `json:"trade_provider"`
-	TradeType     enums.TradeType     `json:"trade_type"`
+	TradeProvider enums.TradeProvider `json:"trade_provider" swaggertype:"string"`
+	TradeType     enums.TradeType     `json:"trade_type" swaggertype:"string"`
 	TradeNo       string              `json:"trade_no"`
 	CodeUrl       *string             `json:"code_url,omitempty"`
 	H5Url         *string             `json:"h5_url,omitempty"`
@@ -85,6 +88,15 @@ func (w *WechatOrderService) MakeOrder(appName string, req MakeOrderReq) (*model
 		},
 	}
 	models.GetDB().Save(order)
+
+	detail, err := w.getRemoteOrderDetail(order.TradeNo, order.TradeType)
+	if err != nil {
+		return nil, err
+	}
+	models.GetDB().Save(detail)
+
+	go w.autoCloseOrder(order)
+
 	return order, nil
 }
 
@@ -161,16 +173,43 @@ func (w *WechatOrderService) GetOrderDetailAndSave(tradeNo string) (*models.Wech
 		return nil, err
 	}
 	if o.TradeState.IsStable() {
-		return models.FindWechatOrderDetailByTradeNo(tradeNo)
+
+		oDetail, err := models.FindWechatOrderDetailByTradeNo(tradeNo)
+		if err != nil {
+			return nil, err
+		}
+		if o.RefundState.IsStable() {
+			return oDetail, nil
+		}
+		// refresh refund status
+		refundDetial, err := w.getRemoteRefundDetail(tradeNo)
+		if err != nil {
+			return nil, err
+		}
+
+		models.UpdateRefundDetail(refundDetial)
+
+		if v, ok := enums.ParserefundState(*refundDetial.Status); ok && v.IsStable() {
+			o.RefundState = *v
+			models.GetDB().Save(o)
+		}
+		return oDetail, nil
 	} else {
 		detail, err := w.getRemoteOrderDetail(tradeNo, o.TradeType)
 		if err != nil {
 			return nil, err
 		}
-		if v, ok := enums.ParseTradeState(*detail.TradeState); ok && v.IsStable() {
-			models.GetDB().Save(detail)
+
+		v, ok := enums.ParseTradeState(*detail.TradeState)
+		if !ok {
+			return nil, fmt.Errorf("unknown trade state %v", *detail.TradeState)
+		}
+
+		if *v != o.TradeState {
 			o.TradeState = *v
+			models.UpdateWechatOrderDetail(detail)
 			models.GetDB().Save(o)
+			logrus.WithField("trade_no", o.TradeNo).WithField("trade_state", o.TradeState).Info("update order and detail")
 		}
 
 		return detail, nil
@@ -205,6 +244,92 @@ func (w *WechatOrderService) getRemoteOrderDetail(tradeNo string, tradeType enum
 	}
 }
 
+func (w *WechatOrderService) getRemoteRefundDetail(tradeNo string) (*models.WechatRefundDetail, error) {
+	req := refunddomestic.QueryByOutRefundNoRequest{OutRefundNo: &tradeNo}
+	resp, _, err := wxRefundService.QueryByOutRefundNo(context.Background(), req)
+	logrus.WithField("trade_no", tradeNo).WithField("response", resp).WithError(err).Info("query order refund detail complete remote")
+	if err != nil {
+		return nil, err
+	}
+	return models.NewWechatRefundDetailByRaw(resp), nil
+}
+
+// 没有保存状态，因为在查询状态时会保存
+func (w *WechatOrderService) Close(tradeNo string) (*models.WechatOrderDetail, error) {
+	order, err := models.FindOrderByTradeNo(tradeNo)
+	if err != nil {
+		return nil, err
+	}
+
+	switch order.TradeType {
+	case enums.TRADE_TYPE_NATIVE:
+		result, err := wxNativeService.CloseOrder(context.Background(), native.CloseOrderRequest{
+			Mchid:      &config.CompanyVal.MchID,
+			OutTradeNo: &order.TradeNo,
+		})
+		logrus.WithField("trade_no", order.TradeNo).WithField("result", result).WithError(err).Info("close order complete remote")
+		if err != nil {
+			return nil, err
+		}
+
+	case enums.TRADE_TYPE_H5:
+		result, err := wxH5Service.CloseOrder(context.Background(), h5.CloseOrderRequest{
+			Mchid:      &config.CompanyVal.MchID,
+			OutTradeNo: &order.TradeNo,
+		})
+		logrus.WithField("trade_no", order.TradeNo).WithField("result", result).WithError(err).Info("close order complete remote")
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, enums.ErrUnkownTradeType
+	}
+	return w.GetOrderDetailAndSave(tradeNo)
+}
+
+type RefundReq struct {
+	Reason string `json:"reason" binding:"required"`
+}
+
+func (w *WechatOrderService) Refund(tradeNo string, req RefundReq) (*models.WechatRefundDetail, error) {
+	order, err := models.FindWechatOrderDetailByTradeNo(tradeNo)
+	if err != nil {
+		return nil, err
+	}
+
+	if order.Amount == 0 {
+		return nil, fmt.Errorf("nothing could be refund")
+	}
+
+	resp, _, err := wxRefundService.Create(context.Background(),
+		refunddomestic.CreateRequest{
+			OutTradeNo:  order.TradeNo,
+			OutRefundNo: order.TradeNo,
+			Reason:      &req.Reason,
+			Amount: &refunddomestic.AmountReq{
+				Currency: core.String("CNY"),
+				Refund:   core.Int64(int64(order.Amount)),
+				Total:    core.Int64(int64(order.Amount)),
+			},
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return models.NewWechatRefundDetailByRaw(resp), nil
+}
+
 func (w *WechatOrderService) NotifyHandler() {
 
+}
+
+func (w *WechatOrderService) autoCloseOrder(order *models.Order) {
+	timer := time.NewTimer(time.Until(*order.TimeExpire))
+	<-timer.C
+	if _, err := w.Close(order.TradeNo); err != nil {
+		logrus.WithError(err).WithField("order id", order).Error("failed to close order")
+		return
+	}
+	logrus.WithField("order id", order).Error("close order successed")
 }

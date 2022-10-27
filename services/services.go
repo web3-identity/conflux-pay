@@ -12,6 +12,7 @@ import (
 	"github.com/wechatpay-apiv3/wechatpay-go/core/option"
 	"github.com/wechatpay-apiv3/wechatpay-go/services/payments/h5"
 	"github.com/wechatpay-apiv3/wechatpay-go/services/payments/native"
+	"github.com/wechatpay-apiv3/wechatpay-go/services/refunddomestic"
 	"github.com/wechatpay-apiv3/wechatpay-go/utils"
 )
 
@@ -19,6 +20,7 @@ var (
 	wxClient        *core.Client
 	wxNativeService native.NativeApiService
 	wxH5Service     h5.H5ApiService
+	wxRefundService refunddomestic.RefundsApiService
 )
 
 func Init() {
@@ -30,6 +32,7 @@ func Init() {
 
 	wxNativeService = native.NativeApiService{Client: wxClient}
 	wxH5Service = h5.H5ApiService{Client: wxClient}
+	wxRefundService = refunddomestic.RefundsApiService{Client: wxClient}
 }
 
 // 交易号生成规则

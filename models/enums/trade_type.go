@@ -1,6 +1,9 @@
 package enums
 
-import "errors"
+import (
+	"encoding/json"
+	"errors"
+)
 
 type TradeType uint
 
@@ -30,12 +33,31 @@ func init() {
 	}
 }
 
+func (t TradeType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(t.String())
+}
+
+func (t *TradeType) UnmarshalJSON(data []byte) error {
+	var str string
+	if err := json.Unmarshal(data, &str); err != nil {
+		return err
+	}
+
+	val, ok := ParseTradeType(str)
+	if !ok {
+		return errors.New("unkown trade_type")
+	}
+	*t = *val
+
+	return nil
+}
+
 func (t *TradeType) String() string {
 	v, ok := tradeTypeValue2StrMap[*t]
 	if ok {
 		return v
 	}
-	return "unknown"
+	return "UNKNOWN"
 }
 
 func ParseTradeType(str string) (*TradeType, bool) {

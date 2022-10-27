@@ -1,5 +1,10 @@
 package enums
 
+import (
+	"encoding/json"
+	"errors"
+)
+
 type TradeState uint
 
 // SUCCESS：支付成功
@@ -41,12 +46,31 @@ func init() {
 	}
 }
 
+func (t TradeState) MarshalJSON() ([]byte, error) {
+	return json.Marshal(t.String())
+}
+
+func (t *TradeState) UnmarshalJSON(data []byte) error {
+	var str string
+	if err := json.Unmarshal(data, &str); err != nil {
+		return err
+	}
+
+	val, ok := ParseTradeState(str)
+	if !ok {
+		return errors.New("unkown trade_state")
+	}
+	*t = *val
+
+	return nil
+}
+
 func (t *TradeState) String() string {
 	v, ok := tradeStateValue2CodeMap[*t]
 	if ok {
 		return v
 	}
-	return "unknown"
+	return "UNKNOWN"
 }
 
 func ParseTradeState(code string) (*TradeState, bool) {
