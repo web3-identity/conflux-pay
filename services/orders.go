@@ -26,7 +26,7 @@ func (w *OrderService) GetOrderSummary(tradeNo string) (*models.Order, error) {
 	if err != nil {
 		return nil, err
 	}
-	if o.TradeState.IsStable() {
+	if o.IsStable() {
 		return o, nil
 	}
 

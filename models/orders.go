@@ -26,6 +26,10 @@ type OrderCore struct {
 	H5Url       *string             `gorm:"type:varchar(255)" json:"h5_url,omitempty"`
 }
 
+func (o *OrderCore) IsStable() bool {
+	return o.TradeState.IsStable() && o.RefundState.IsStable(o.TradeState)
+}
+
 func FindOrderByTradeNo(tradeNo string) (*Order, error) {
 	o := Order{}
 	o.TradeNo = tradeNo

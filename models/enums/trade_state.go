@@ -79,5 +79,9 @@ func ParseTradeState(code string) (*TradeState, bool) {
 }
 
 func (t TradeState) IsStable() bool {
-	return t != TRADE_STATE_NOTPAY && t != TRADE_STATE_USERPAYING
+	return t != TRADE_STATE_NOTPAY && t != TRADE_STATE_USERPAYING && t != TRADE_STATE_SUCCESSS
+}
+
+func (t TradeState) IsSuccess() bool {
+	return t == TRADE_STATE_SUCCESSS
 }

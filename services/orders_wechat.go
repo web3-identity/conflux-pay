@@ -178,7 +178,7 @@ func (w *WechatOrderService) GetOrderDetailAndSave(tradeNo string) (*models.Wech
 		if err != nil {
 			return nil, err
 		}
-		if o.RefundState.IsStable() {
+		if o.RefundState.IsStable(o.TradeState) {
 			return oDetail, nil
 		}
 		// refresh refund status
@@ -189,7 +189,7 @@ func (w *WechatOrderService) GetOrderDetailAndSave(tradeNo string) (*models.Wech
 
 		models.UpdateRefundDetail(refundDetial)
 
-		if v, ok := enums.ParserefundState(*refundDetial.Status); ok && v.IsStable() {
+		if v, ok := enums.ParserefundState(*refundDetial.Status); ok && *v != o.RefundState {
 			o.RefundState = *v
 			models.GetDB().Save(o)
 		}

@@ -71,6 +71,6 @@ func ParserefundState(code string) (*RefundState, bool) {
 	return &v, ok
 }
 
-func (t RefundState) IsStable() bool {
-	return t == REFUND_STATE_NIL || t == REFUND_STATE_SUCCESSS || t == REFUND_STATE_CLOSED
+func (t RefundState) IsStable(tradeState TradeState) bool {
+	return tradeState != TRADE_STATE_REFUND || (t != REFUND_STATE_NIL && t != REFUND_STATE_PROCESSING)
 }
