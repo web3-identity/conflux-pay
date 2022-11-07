@@ -5,7 +5,7 @@ import (
 	"runtime/debug"
 
 	"github.com/gin-gonic/gin"
-	rainbow_errors "github.com/wangdayong228/conflux-pay/pay_errors"
+	rainbow_errors "github.com/web3-identity/conflux-pay/pay_errors"
 )
 
 func DataResponse(data interface{}) interface{} {

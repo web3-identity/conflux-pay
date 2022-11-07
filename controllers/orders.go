@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/wangdayong228/conflux-pay/services"
-	"github.com/wangdayong228/conflux-pay/utils/ginutils"
+	"github.com/web3-identity/conflux-pay/services"
+	"github.com/web3-identity/conflux-pay/utils/ginutils"
 )
 
 var (

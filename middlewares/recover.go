@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	rainbow_errors "github.com/wangdayong228/conflux-pay/pay_errors"
-	"github.com/wangdayong228/conflux-pay/utils/ginutils"
+	rainbow_errors "github.com/web3-identity/conflux-pay/pay_errors"
+	"github.com/web3-identity/conflux-pay/utils/ginutils"
 )
 
 func Recovery() gin.HandlerFunc {

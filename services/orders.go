@@ -1,9 +1,9 @@
 package services
 
 import (
-	"github.com/wangdayong228/conflux-pay/models"
-	"github.com/wangdayong228/conflux-pay/models/enums"
-	cns_errors "github.com/wangdayong228/conflux-pay/pay_errors"
+	"github.com/web3-identity/conflux-pay/models"
+	"github.com/web3-identity/conflux-pay/models/enums"
+	cns_errors "github.com/web3-identity/conflux-pay/pay_errors"
 )
 
 type OrderService struct {

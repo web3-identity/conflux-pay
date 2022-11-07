@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"github.com/wangdayong228/conflux-pay/config"
-	"github.com/wangdayong228/conflux-pay/models/enums"
+	"github.com/web3-identity/conflux-pay/config"
+	"github.com/web3-identity/conflux-pay/models/enums"
 	"github.com/wechatpay-apiv3/wechatpay-go/core"
 	"github.com/wechatpay-apiv3/wechatpay-go/core/option"
 	"github.com/wechatpay-apiv3/wechatpay-go/services/payments/h5"

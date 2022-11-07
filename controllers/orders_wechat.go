@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	cns_errors "github.com/wangdayong228/conflux-pay/pay_errors"
-	"github.com/wangdayong228/conflux-pay/services"
-	"github.com/wangdayong228/conflux-pay/utils/ginutils"
+	cns_errors "github.com/web3-identity/conflux-pay/pay_errors"
+	"github.com/web3-identity/conflux-pay/services"
+	"github.com/web3-identity/conflux-pay/utils/ginutils"
 )
 
 type WechatOrderCtrl struct {

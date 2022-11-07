@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/wangdayong228/conflux-pay/models/enums"
+	"github.com/web3-identity/conflux-pay/models/enums"
 	"github.com/wechatpay-apiv3/wechatpay-go/services/payments"
 )
 

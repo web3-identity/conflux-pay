@@ -1,4 +1,4 @@
-module github.com/wangdayong228/conflux-pay
+module github.com/web3-identity/conflux-pay
 
 go 1.17
 
