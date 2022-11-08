@@ -8,9 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/web3-identity/conflux-pay/config"
-	_ "github.com/web3-identity/conflux-pay/config"
 	"github.com/web3-identity/conflux-pay/logger"
-	_ "github.com/web3-identity/conflux-pay/logger"
 	"github.com/web3-identity/conflux-pay/middlewares"
 	"github.com/web3-identity/conflux-pay/models"
 	"github.com/web3-identity/conflux-pay/routers"
@@ -28,17 +26,9 @@ func initGin() *gin.Engine {
 	return engine
 }
 
-// func init() {
-// initConfig()
-// logger.Init()
-// middlewares.InitOpenJwtMiddleware()
-// middlewares.InitRateLimitMiddleware()
-// logrus.Info("init done")
-// }
-
 // @title       Rainbow-API
 // @version     1.0
-// @description The responses of the open api in swagger focus on the data field rather than the code and the message fields
+// @description Conflux-Pay API documentation
 
 // @license.name Apache 2.0
 // @license.url  http://www.apache.org/licenses/LICENSE-2.0.html

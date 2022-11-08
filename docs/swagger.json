@@ -5,7 +5,7 @@
     ],
     "swagger": "2.0",
     "info": {
-        "description": "The responses of the open api in swagger focus on the data field rather than the code and the message fields",
+        "description": "Conflux-Pay API documentation",
         "title": "Rainbow-API",
         "contact": {},
         "license": {

@@ -180,8 +180,7 @@ definitions:
 host: 127.0.0.1:8080
 info:
   contact: {}
-  description: The responses of the open api in swagger focus on the data field rather
-    than the code and the message fields
+  description: Conflux-Pay API documentation
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html

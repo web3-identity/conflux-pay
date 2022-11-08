@@ -542,7 +542,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/v0",
 	Schemes:          []string{"http", "https"},
 	Title:            "Rainbow-API",
-	Description:      "The responses of the open api in swagger focus on the data field rather than the code and the message fields",
+	Description:      "Conflux-Pay API documentation",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }
