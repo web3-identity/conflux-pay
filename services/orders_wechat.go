@@ -132,7 +132,6 @@ func (w *WechatOrderService) prePay(appName string, tradeNo string, req MakeOrde
 	app := config.MustGetApp(appName)
 
 	expire := time.Unix(req.TimeExpire, 0)
-	notifyUrl := fmt.Sprintf("%v%v", config.NotifyUrlBase, tradeNo)
 	prepayReq := PrepayRequest{
 		Appid:       &app.AppId,
 		Mchid:       &config.CompanyVal.MchID,
@@ -140,7 +139,7 @@ func (w *WechatOrderService) prePay(appName string, tradeNo string, req MakeOrde
 		OutTradeNo:  &tradeNo,
 		TimeExpire:  &expire,
 		Amount:      &native.Amount{Total: &req.Amount},
-		NotifyUrl:   &notifyUrl,
+		NotifyUrl:   config.GetWxPayNotifyUrl(tradeNo),
 	}
 
 	orderResp := &MakeOrderResp{
@@ -167,6 +166,10 @@ func (w *WechatOrderService) prePay(appName string, tradeNo string, req MakeOrde
 		return nil, enums.ErrUnkownTradeType
 	}
 	return orderResp, nil
+}
+
+func (w *WechatOrderService) GetOrderDetail(tradeNo string) (*models.WechatOrderDetail, error) {
+	return models.FindWechatOrderDetailByTradeNo(tradeNo)
 }
 
 func (w *WechatOrderService) GetOrderDetailAndSave(tradeNo string) (*models.WechatOrderDetail, error) {
@@ -313,6 +316,7 @@ func (w *WechatOrderService) Refund(tradeNo string, req RefundReq) (*models.Wech
 				Refund:   core.Int64(int64(order.Amount)),
 				Total:    core.Int64(int64(order.Amount)),
 			},
+			NotifyUrl: config.GetWxRefundNotifyUrl(tradeNo),
 		},
 	)
 	if err != nil {
@@ -332,20 +336,22 @@ func (w *WechatOrderService) autoCloseOrder(order *models.Order) {
 	logrus.WithField("order id", order).Error("close order successed")
 }
 
-// ==================== Pay Notify ============================
+// ==================== Notify ============================
 
-func (w *WechatOrderService) NotifyHandler(tradeNo string, request *http.Request) error {
+func (w *WechatOrderService) PayNotifyHandler(tradeNo string, request *http.Request) error {
 	transaction := new(payments.Transaction)
 	notifyReq, err := wxNotifyHandler.ParseNotifyRequest(context.Background(), request, transaction)
 	// 如果验签未通过，或者解密失败
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
+
 	// 处理通知内容
-	fmt.Println(notifyReq.Summary)
-	fmt.Println(transaction.TransactionId)
-	fmt.Println(transaction.OutTradeNo)
+	logrus.WithFields(logrus.Fields{
+		"summary":  notifyReq.Summary,
+		"trade_no": transaction.OutTradeNo,
+	}).Info("received pay notifiy")
+
 	tradeState, ok := enums.ParseTradeState(*transaction.TradeState)
 	if !ok {
 		return enums.ErrUnkownTradeState
@@ -357,5 +363,38 @@ func (w *WechatOrderService) NotifyHandler(tradeNo string, request *http.Request
 		return err
 	}
 	o.TradeState = *tradeState
+
+	models.UpdateWechatOrderDetail(models.NewWechatOrderDetailByRaw(transaction))
+	return models.GetDB().Save(o).Error
+}
+
+func (w *WechatOrderService) RefundNotifyHandler(tradeNo string, request *http.Request) error {
+	refundDetail := new(models.WechatRefundDetail)
+	notifyReq, err := wxNotifyHandler.ParseNotifyRequest(context.Background(), request, refundDetail)
+	// 如果验签未通过，或者解密失败
+	if err != nil {
+		return err
+	}
+	refundDetail.Status = refundDetail.RefundStatus
+
+	// 处理通知内容
+	logrus.WithFields(logrus.Fields{
+		"summary":  notifyReq.Summary,
+		"trade_no": refundDetail.TradeNo,
+	}).Info("received pay notifiy")
+
+	refundState, ok := enums.ParserefundState(*refundDetail.Status)
+	if !ok {
+		return enums.ErrUnkownTradeState
+	}
+
+	// save order
+	o, err := models.FindOrderByTradeNo(refundDetail.TradeNo)
+	if err != nil {
+		return err
+	}
+	o.RefundState = *refundState
+
+	models.UpdateRefundDetail(refundDetail)
 	return models.GetDB().Save(o).Error
 }

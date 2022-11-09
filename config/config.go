@@ -22,15 +22,15 @@ func Init() {
 
 	CompanyVal = getCompany()
 	Apps = getApps()
-	NotifyUrlBase = viper.Sub("order").GetString("notify_url_base")
+	WechatOrderConfig = getOrderConfig("wechat")
 
-	fmt.Println("notify_url_base: " + NotifyUrlBase)
+	fmt.Printf("wechat order config: %v\n", WechatOrderConfig)
 }
 
 var (
-	CompanyVal    *Company
-	Apps          map[string]App
-	NotifyUrlBase string
+	CompanyVal        *Company
+	Apps              map[string]App
+	WechatOrderConfig *OrderItem
 )
 
 type Company struct {
@@ -44,6 +44,11 @@ type App struct {
 	AppId         string
 	AppSecretHash string
 	AppInternalID uint
+}
+
+type OrderItem struct {
+	PayNotifyUrlBase    string
+	RefundNotifyUrlBase string
 }
 
 func getCompany() *Company {
@@ -64,10 +69,29 @@ func getApps() map[string]App {
 	return apps
 }
 
+// providerName maybe wechat/alipay/bank
+func getOrderConfig(providerName string) *OrderItem {
+	sub := viper.GetViper().Sub("order").Sub("wechat")
+	return &OrderItem{
+		PayNotifyUrlBase:    sub.GetString("pay_notify_url_base"),
+		RefundNotifyUrlBase: sub.GetString("refund_notify_url_base"),
+	}
+}
+
 func MustGetApp(appName string) App {
 	v, ok := Apps[appName]
 	if !ok {
 		panic("not exists")
 	}
 	return v
+}
+
+func GetWxPayNotifyUrl(tradeNo string) *string {
+	v := fmt.Sprintf("%v%v", WechatOrderConfig.PayNotifyUrlBase, tradeNo)
+	return &v
+}
+
+func GetWxRefundNotifyUrl(tradeNo string) *string {
+	v := fmt.Sprintf("%v%v", WechatOrderConfig.RefundNotifyUrlBase, tradeNo)
+	return &v
 }

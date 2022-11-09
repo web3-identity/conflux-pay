@@ -104,6 +104,6 @@ func (w *WechatOrderCtrl) Close(c *gin.Context) {
 
 func (w *WechatOrderCtrl) ReceiveNotify(c *gin.Context) {
 	trandeNo := c.Param("trade_no")
-	err := w.service.NotifyHandler(trandeNo, c.Request)
+	err := w.service.PayNotifyHandler(trandeNo, c.Request)
 	ginutils.RenderResp(c, nil, err)
 }
