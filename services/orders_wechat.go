@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -12,6 +13,7 @@ import (
 	"github.com/web3-identity/conflux-pay/models/enums"
 	cns_errors "github.com/web3-identity/conflux-pay/pay_errors"
 	"github.com/wechatpay-apiv3/wechatpay-go/core"
+	"github.com/wechatpay-apiv3/wechatpay-go/services/payments"
 	"github.com/wechatpay-apiv3/wechatpay-go/services/payments/h5"
 	"github.com/wechatpay-apiv3/wechatpay-go/services/payments/native"
 	"github.com/wechatpay-apiv3/wechatpay-go/services/refunddomestic"
@@ -320,10 +322,6 @@ func (w *WechatOrderService) Refund(tradeNo string, req RefundReq) (*models.Wech
 	return models.NewWechatRefundDetailByRaw(resp), nil
 }
 
-func (w *WechatOrderService) NotifyHandler() {
-
-}
-
 func (w *WechatOrderService) autoCloseOrder(order *models.Order) {
 	timer := time.NewTimer(time.Until(*order.TimeExpire))
 	<-timer.C
@@ -332,4 +330,32 @@ func (w *WechatOrderService) autoCloseOrder(order *models.Order) {
 		return
 	}
 	logrus.WithField("order id", order).Error("close order successed")
+}
+
+// ==================== Pay Notify ============================
+
+func (w *WechatOrderService) NotifyHandler(tradeNo string, request *http.Request) error {
+	transaction := new(payments.Transaction)
+	notifyReq, err := wxNotifyHandler.ParseNotifyRequest(context.Background(), request, transaction)
+	// 如果验签未通过，或者解密失败
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	// 处理通知内容
+	fmt.Println(notifyReq.Summary)
+	fmt.Println(transaction.TransactionId)
+	fmt.Println(transaction.OutTradeNo)
+	tradeState, ok := enums.ParseTradeState(*transaction.TradeState)
+	if !ok {
+		return enums.ErrUnkownTradeState
+	}
+
+	// save order
+	o, err := models.FindOrderByTradeNo(*transaction.OutTradeNo)
+	if err != nil {
+		return err
+	}
+	o.TradeState = *tradeState
+	return models.GetDB().Save(o).Error
 }

@@ -29,6 +29,10 @@ var (
 	tradeStateCode2ValueMap map[string]TradeState
 )
 
+var (
+	ErrUnkownTradeState = errors.New("unknown trade state")
+)
+
 func init() {
 	tradeStateValue2CodeMap = map[TradeState]string{
 		TRADE_STATE_SUCCESSS:   "SUCCESS",
