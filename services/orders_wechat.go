@@ -132,7 +132,7 @@ func (w *WechatOrderService) prePay(appName string, tradeNo string, req MakeOrde
 	app := config.MustGetApp(appName)
 
 	expire := time.Unix(req.TimeExpire, 0)
-	notifyUrl := "https://www.baidu.com"
+	notifyUrl := fmt.Sprintf("%v%v", config.NotifyUrlBase, tradeNo)
 	prepayReq := PrepayRequest{
 		Appid:       &app.AppId,
 		Mchid:       &config.CompanyVal.MchID,

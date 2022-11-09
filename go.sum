@@ -469,6 +469,8 @@ github.com/valyala/fasthttp v1.34.0/go.mod h1:epZA5N+7pY6ZaEKRmstzOuYJx9HI8DI1oa
 github.com/valyala/tcplisten v1.0.0/go.mod h1:T0xQ8SeCZGxckz9qRXTfG43PvQ/mcWh7FwZEA7Ioqkc=
 github.com/wechatpay-apiv3/wechatpay-go v0.2.15 h1:WtlAK8GsLwTveS7c5W8Vd1m4rU1cJ0YW6tqBW2BlKH8=
 github.com/wechatpay-apiv3/wechatpay-go v0.2.15/go.mod h1:Ca9wvI7xFoIWiY163q1jzddarQBS+1NE17OM1ZV24nw=
+github.com/wechatpay-apiv3/wechatpay-go v0.2.16 h1:7wTQYLxx5PSkzv0Zu/LabGHDVva9VEvH56su/lzRPbE=
+github.com/wechatpay-apiv3/wechatpay-go v0.2.16/go.mod h1:Ca9wvI7xFoIWiY163q1jzddarQBS+1NE17OM1ZV24nw=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

@@ -30,6 +30,7 @@ func SetupRoutes(router *gin.Engine) {
 			alipay := order.Group("alipay")
 			{
 				ctrl := controllers.AlipayOrderCtrl{}
+				alipay.POST("", ctrl.MakeOrder)
 				alipay.POST("/", ctrl.MakeOrder)
 				alipay.GET("/:trade_no", ctrl.GetOrder)
 			}

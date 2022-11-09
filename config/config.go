@@ -22,11 +22,15 @@ func Init() {
 
 	CompanyVal = getCompany()
 	Apps = getApps()
+	NotifyUrlBase = viper.Sub("order").GetString("notify_url_base")
+
+	fmt.Println("notify_url_base: " + NotifyUrlBase)
 }
 
 var (
-	CompanyVal *Company
-	Apps       map[string]App
+	CompanyVal    *Company
+	Apps          map[string]App
+	NotifyUrlBase string
 )
 
 type Company struct {

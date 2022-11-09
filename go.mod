@@ -9,7 +9,7 @@ require (
 	github.com/spf13/viper v1.13.0
 	github.com/swaggo/swag v1.8.7
 	github.com/ulule/limiter/v3 v3.10.0
-	github.com/wechatpay-apiv3/wechatpay-go v0.2.15
+	github.com/wechatpay-apiv3/wechatpay-go v0.2.16
 	go.uber.org/ratelimit v0.2.0
 	gorm.io/driver/mysql v1.4.1
 	gorm.io/gorm v1.24.0
