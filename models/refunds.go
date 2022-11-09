@@ -42,7 +42,6 @@ func NewWechatRefundDetailByRaw(raw *refunddomestic.Refund) *WechatRefundDetail 
 		SuccessTime:         raw.SuccessTime,
 		CreateTime:          raw.CreateTime,
 		Status:              (*string)(raw.Status),
-		RefundStatus:        (*string)(raw.Status),
 		FundsAccount:        (*string)(raw.FundsAccount),
 		Amount:              raw.Amount.Total,
 	}
