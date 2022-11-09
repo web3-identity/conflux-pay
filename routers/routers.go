@@ -26,8 +26,8 @@ func SetupRoutes(router *gin.Engine) {
 				wechat.PUT("/close/:trade_no", ctrl.Close)
 				wechat.GET("/:trade_no", ctrl.GetOrder)
 
-				wechat.POST("/notify-pay/:trade_no", ctrl.ReceiveNotify)
-				wechat.POST("/notify-refund/:trade_no", ctrl.ReceiveNotify)
+				wechat.POST("/notify-pay/:trade_no", ctrl.ReceivePayNotify)
+				wechat.POST("/notify-refund/:trade_no", ctrl.ReceiveRefundNotify)
 			}
 			alipay := order.Group("alipay")
 			{

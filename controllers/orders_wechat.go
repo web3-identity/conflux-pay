@@ -102,8 +102,14 @@ func (w *WechatOrderCtrl) Close(c *gin.Context) {
 	ginutils.RenderResp(c, o, err)
 }
 
-func (w *WechatOrderCtrl) ReceiveNotify(c *gin.Context) {
+func (w *WechatOrderCtrl) ReceivePayNotify(c *gin.Context) {
 	trandeNo := c.Param("trade_no")
 	err := w.service.PayNotifyHandler(trandeNo, c.Request)
+	ginutils.RenderResp(c, nil, err)
+}
+
+func (w *WechatOrderCtrl) ReceiveRefundNotify(c *gin.Context) {
+	trandeNo := c.Param("trade_no")
+	err := w.service.RefundNotifyHandler(trandeNo, c.Request)
 	ginutils.RenderResp(c, nil, err)
 }
