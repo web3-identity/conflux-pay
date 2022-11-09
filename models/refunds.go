@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/wechatpay-apiv3/wechatpay-go/services/refunddomestic"
+	"gorm.io/gorm"
 )
 
 type WechatRefundDetail struct {
@@ -55,7 +56,7 @@ func FindRefundDetailByTradeNo(tradeNo string) (*WechatRefundDetail, error) {
 
 func UpdateRefundDetail(val *WechatRefundDetail) error {
 	refundInDb, err := FindRefundDetailByTradeNo(val.TradeNo)
-	if err != nil {
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return err
 	}
 
