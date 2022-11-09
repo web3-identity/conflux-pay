@@ -368,33 +368,38 @@ func (w *WechatOrderService) PayNotifyHandler(tradeNo string, request *http.Requ
 	return models.GetDB().Save(o).Error
 }
 
+type refundWithRefundStatus struct {
+	refunddomestic.Refund
+	RefundStatus *string `gorm:"-" json:"refund_status"`
+}
+
 func (w *WechatOrderService) RefundNotifyHandler(tradeNo string, request *http.Request) error {
-	refundDetail := new(models.WechatRefundDetail)
-	notifyReq, err := wxNotifyHandler.ParseNotifyRequest(context.Background(), request, refundDetail)
+	refundResp := new(refundWithRefundStatus)
+	notifyReq, err := wxNotifyHandler.ParseNotifyRequest(context.Background(), request, refundResp)
 	// 如果验签未通过，或者解密失败
 	if err != nil {
 		return err
 	}
-	refundDetail.Status = refundDetail.RefundStatus
+	refundResp.Status = (*refunddomestic.Status)(refundResp.RefundStatus)
 
 	// 处理通知内容
 	logrus.WithFields(logrus.Fields{
 		"summary":  notifyReq.Summary,
-		"trade_no": refundDetail.TradeNo,
+		"trade_no": refundResp.OutTradeNo,
 	}).Info("received pay notifiy")
 
-	refundState, ok := enums.ParserefundState(*refundDetail.Status)
+	refundState, ok := enums.ParserefundState(string(*refundResp.Status))
 	if !ok {
 		return enums.ErrUnkownTradeState
 	}
 
 	// save order
-	o, err := models.FindOrderByTradeNo(refundDetail.TradeNo)
+	o, err := models.FindOrderByTradeNo(*refundResp.OutTradeNo)
 	if err != nil {
 		return err
 	}
 	o.RefundState = *refundState
 
-	models.UpdateRefundDetail(refundDetail)
+	models.UpdateRefundDetail(models.NewWechatRefundDetailByRaw(&refundResp.Refund))
 	return models.GetDB().Save(o).Error
 }
