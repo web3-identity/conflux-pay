@@ -3,14 +3,9 @@ package models
 import (
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"github.com/web3-identity/conflux-pay/models/enums"
-	"github.com/wechatpay-apiv3/wechatpay-go/services/payments"
 )
-
-type Order struct {
-	BaseModel
-	OrderCore
-}
 
 type OrderCore struct {
 	AppName     string              `gorm:"type:varchar(32)"`
@@ -30,74 +25,44 @@ func (o *OrderCore) IsStable() bool {
 	return o.TradeState.IsStable() && o.RefundState.IsStable(o.TradeState)
 }
 
+type OrderNofity struct {
+	AppPayNotifyUrl *string `gorm:"type:varchar(255)" json:"app_pay_notify_url"` // 上层应用通知url
+	// PayNotifyNextTime    *time.Time `json:"pay_notify_next_time"`
+	PayNotifyCount       int  `json:"pay_notify_count"`
+	IsPayNotifyCompleted bool `json:"is_pay_notify_completed"`
+
+	AppRefundNotifyUrl *string `gorm:"type:varchar(255)" json:"app_refund_notify_url"` // 上层应用通知url
+	// RefundNotifyNextTime    *time.Time `json:"refund_notify_next_time"`
+	RefundNotifyCount       int  `json:"refund_notify_count"`
+	IsRefundNotifyCompleted bool `json:"is_refund_notify_completed"`
+}
+
+type Order struct {
+	BaseModel
+	OrderCore
+	OrderNofity
+}
+
+func (o *Order) Save() error {
+	err := GetDB().Save(o).Error
+	if err != nil {
+		logrus.WithError(err).Error("failed save order")
+	}
+	return err
+}
+
 func FindOrderByTradeNo(tradeNo string) (*Order, error) {
 	o := Order{}
 	o.TradeNo = tradeNo
 	return &o, GetDB().Where(&o).First(&o).Error
 }
 
-type WechatOrderDetail struct {
-	BaseModel
-	Amount         uint    `gorm:"type:varchar(32);" json:"amount,omitempty"`
-	Appid          *string `gorm:"type:varchar(32);" json:"appid,omitempty"`
-	Attach         *string `gorm:"type:varchar(32);" json:"attach,omitempty"`
-	BankType       *string `gorm:"type:varchar(32);" json:"bank_type,omitempty"`
-	Mchid          *string `gorm:"type:varchar(32);" json:"mchid,omitempty"`
-	TradeNo        *string `gorm:"type:varchar(32);uniqueIndex" json:"trade_no,omitempty"`
-	Payer          *string `gorm:"type:varchar(32);" json:"payer,omitempty"`
-	SuccessTime    *string `gorm:"type:varchar(32);" json:"success_time,omitempty"`
-	TradeState     *string `gorm:"type:varchar(32);" json:"trade_state,omitempty"`
-	TradeStateDesc *string `gorm:"type:varchar(255);" json:"trade_state_desc,omitempty"`
-	TradeType      *string `gorm:"type:varchar(32);" json:"trade_type,omitempty"`
-	TransactionId  *string `gorm:"type:varchar(32);" json:"transaction_id,omitempty"`
-	RefundNo       *string `gorm:"type:varchar(32);" json:"refund_no,omitempty"`
-	RefundStatus   *string `gorm:"type:varchar(32);" json:"refresh_status,omitempty"`
-	// PromotionDetail []PromotionDetail `json:"promotion_detail,omitempty"`
-}
-
-func FindWechatOrderDetailByTradeNo(tradeNo string) (*WechatOrderDetail, error) {
-	o := WechatOrderDetail{
-		TradeNo: &tradeNo,
+func FindNeedNotifyOrders(startId uint) ([]*Order, error) {
+	var orders []*Order
+	if err := GetDB().Where("id > ?", startId).
+		Where("is_pay_notify_completed = ? or is_refund_notify_completed = ?", false, false).
+		Find(&orders).Error; err != nil {
+		return nil, err
 	}
-	return &o, GetDB().Where(&o).First(&o).Error
-}
-
-func NewWechatOrderDetailByRaw(raw *payments.Transaction) *WechatOrderDetail {
-	payer := (*string)(nil)
-	if raw.Payer != nil {
-		payer = raw.Payer.Openid
-	}
-
-	amount := uint(0)
-	if raw != nil && raw.Amount != nil && raw.Amount.Total != nil {
-		amount = uint(*raw.Amount.Total)
-	}
-
-	return &WechatOrderDetail{
-		Amount:         amount,
-		Appid:          raw.Appid,
-		Attach:         raw.Attach,
-		BankType:       raw.BankType,
-		Mchid:          raw.Mchid,
-		TradeNo:        raw.OutTradeNo,
-		Payer:          payer,
-		SuccessTime:    raw.SuccessTime,
-		TradeState:     raw.TradeState,
-		TradeStateDesc: raw.TradeStateDesc,
-		TradeType:      raw.TradeType,
-		TransactionId:  raw.TransactionId,
-	}
-}
-
-func UpdateWechatOrderDetail(val *WechatOrderDetail) error {
-	valInDb, err := FindWechatOrderDetailByTradeNo(*val.TradeNo)
-	if err != nil {
-		return err
-	}
-
-	val.BaseModel = valInDb.BaseModel
-	return GetDB().Save(val).Error
-}
-
-type AlipayOrderDetail struct {
+	return orders, nil
 }

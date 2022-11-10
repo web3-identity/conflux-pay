@@ -39,6 +39,10 @@ func Init() {
 	wxRefundService = refunddomestic.RefundsApiService{Client: wxClient}
 }
 
+func StartTasks() {
+	go LoopNotify()
+}
+
 // 交易号生成规则
 // 时间戳 + 上游服务方ID
 // TODO: 防止并发导致的重复

@@ -46,6 +46,7 @@ func main() {
 	// var _ config.App
 	// app.Use(middlewares.RateLimitMiddleware)
 	routers.SetupRoutes(app)
+	services.StartTasks()
 
 	port := viper.GetString("port")
 	if port == "" {

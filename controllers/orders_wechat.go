@@ -60,7 +60,7 @@ func (w *WechatOrderCtrl) RefreshPayUrl(c *gin.Context) {
 // @Router      /orders/wechat/{trade_no} [get]
 func (w *WechatOrderCtrl) GetOrder(c *gin.Context) {
 	trandeNo := c.Param("trade_no")
-	o, err := w.service.GetOrderDetailAndSave(trandeNo)
+	o, err := w.service.GetOrderDetail(trandeNo)
 	ginutils.RenderResp(c, o, err)
 }
 

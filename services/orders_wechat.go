@@ -27,6 +27,7 @@ type MakeOrderReq struct {
 	Description *string         `json:"description" binding:"required"`
 	TimeExpire  int64           `json:"time_expire,omitempty" binding:"required"`
 	Amount      int64           `json:"amount" binding:"required"`
+	NotifyUrl   *string         `json:"notify_url"`
 }
 
 type MakeOrderResp struct {
@@ -88,7 +89,11 @@ func (w *WechatOrderService) MakeOrder(appName string, req MakeOrderReq) (*model
 			CodeUrl:     orderResp.CodeUrl,
 			H5Url:       orderResp.H5Url,
 		},
+		OrderNofity: models.OrderNofity{
+			AppPayNotifyUrl: req.NotifyUrl,
+		},
 	}
+
 	models.GetDB().Save(order)
 
 	detail, err := w.getRemoteOrderDetail(order.TradeNo, order.TradeType)
@@ -293,10 +298,21 @@ func (w *WechatOrderService) Close(tradeNo string) (*models.WechatOrderDetail, e
 }
 
 type RefundReq struct {
-	Reason string `json:"reason" binding:"required"`
+	Reason    string  `json:"reason" binding:"required"`
+	NotifyUrl *string `json:"notify_url"`
 }
 
 func (w *WechatOrderService) Refund(tradeNo string, req RefundReq) (*models.WechatRefundDetail, error) {
+	oSummary, err := models.FindOrderByTradeNo(tradeNo)
+	if err != nil {
+		return nil, err
+	}
+
+	oSummary.AppPayNotifyUrl = req.NotifyUrl
+	if err = oSummary.Save(); err != nil {
+		return nil, err
+	}
+
 	order, err := models.FindWechatOrderDetailByTradeNo(tradeNo)
 	if err != nil {
 		return nil, err
@@ -323,7 +339,8 @@ func (w *WechatOrderService) Refund(tradeNo string, req RefundReq) (*models.Wech
 		return nil, err
 	}
 
-	return models.NewWechatRefundDetailByRaw(resp), nil
+	refundDetail := models.NewWechatRefundDetailByRaw(resp)
+	return refundDetail, models.UpdateRefundDetail(refundDetail)
 }
 
 func (w *WechatOrderService) autoCloseOrder(order *models.Order) {
