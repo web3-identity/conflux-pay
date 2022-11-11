@@ -222,48 +222,48 @@ func (w *WechatOrderService) GetOrderDetailAndSave(tradeNo string) (*models.Wech
 	if err != nil {
 		return nil, err
 	}
-	if o.TradeState.IsStable() {
+	// if o.TradeState.IsStable() {
 
-		oDetail, err := models.FindWechatOrderDetailByTradeNo(tradeNo)
-		if err != nil {
-			return nil, err
-		}
-		if o.RefundState.IsStable(o.TradeState) {
-			return oDetail, nil
-		}
-		// refresh refund status
-		refundDetial, err := w.getRemoteRefundDetail(tradeNo)
-		if err != nil {
-			return nil, err
-		}
+	// 	oDetail, err := models.FindWechatOrderDetailByTradeNo(tradeNo)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	if o.RefundState.IsStable(o.TradeState) {
+	// 		return oDetail, nil
+	// 	}
+	// 	// refresh refund status
+	// 	refundDetial, err := w.getRemoteRefundDetail(tradeNo)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
 
-		models.UpdateRefundDetail(refundDetial)
+	// 	models.UpdateRefundDetail(refundDetial)
 
-		if v, ok := enums.ParserefundState(*refundDetial.Status); ok && *v != o.RefundState {
-			o.RefundState = *v
-			models.GetDB().Save(o)
-		}
-		return oDetail, nil
-	} else {
-		detail, err := w.getRemoteOrderDetail(tradeNo, o.TradeType)
-		if err != nil {
-			return nil, err
-		}
-
-		v, ok := enums.ParseTradeState(*detail.TradeState)
-		if !ok {
-			return nil, fmt.Errorf("unknown trade state %v", *detail.TradeState)
-		}
-
-		if *v != o.TradeState {
-			o.TradeState = *v
-			models.UpdateWechatOrderDetail(detail)
-			models.GetDB().Save(o)
-			logrus.WithField("trade_no", o.TradeNo).WithField("trade_state", o.TradeState).Info("update order and detail")
-		}
-
-		return detail, nil
+	// 	if v, ok := enums.ParserefundState(*refundDetial.Status); ok && *v != o.RefundState {
+	// 		o.RefundState = *v
+	// 		models.GetDB().Save(o)
+	// 	}
+	// 	return oDetail, nil
+	// } else {
+	detail, err := w.getRemoteOrderDetail(tradeNo, o.TradeType)
+	if err != nil {
+		return nil, err
 	}
+
+	v, ok := enums.ParseTradeState(*detail.TradeState)
+	if !ok {
+		return nil, fmt.Errorf("unknown trade state %v", *detail.TradeState)
+	}
+
+	if *v != o.TradeState {
+		o.TradeState = *v
+		models.UpdateWechatOrderDetail(detail)
+		models.GetDB().Save(o)
+		logrus.WithField("trade_no", o.TradeNo).WithField("trade_state", o.TradeState).Info("update order and detail")
+	}
+
+	return detail, nil
+	// }
 }
 
 func (w *WechatOrderService) getRemoteOrderDetail(tradeNo string, tradeType enums.TradeType) (*models.WechatOrderDetail, error) {
