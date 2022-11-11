@@ -15,50 +15,55 @@ import (
 
 func RunNotifyTask() {
 
-	lastHandledId := uint(0)
-	// 每秒循环
-	// 根据time,count,is_completed决定是否发送通知，发送完跟新time,count,is_completed
-	// for {
-	// time.Sleep(time.Second * 3)
-	orders, err := models.FindNeedNotifyOrders(lastHandledId)
-	if err != nil {
-		logrus.WithError(err).Error("failed find orders need to notify")
-		// continue
+	for {
+		// lastHandledId := uint(0)
+		// 每秒循环
+		// 根据time,count,is_completed决定是否发送通知，发送完跟新time,count,is_completed
+		// for {
+		// time.Sleep(time.Second * 3)
+		orders, err := models.FindNeedNotifyOrders(0)
+		if err != nil {
+			logrus.WithError(err).Error("failed find orders need to notify")
+			time.Sleep(10 * time.Second)
+			continue
+		}
+
+		for _, o := range orders {
+			go runPayNotifyTask(o)
+			go runRefundNotifyTask(o)
+		}
 		return
 	}
 
-	for _, o := range orders {
-		// if !o.IsPayNotifyCompleted && o.TradeState.IsStable() {
-		go runPayNotifyTask(o)
-		// }
-		// if !o.IsRefundNotifyCompleted && o.RefundState.IsStable(o.TradeState) {
-		go runRefundNotifyTask(o)
-		// }
-		// lastHandledId = o.ID
-	}
-	// }
 }
 
 func runPayNotifyTask(o *models.Order) {
+	fmt.Println("run pay notify task")
 	if o.IsPayNotifyCompleted || !o.TradeState.IsStable() {
 		return
 	}
 
+	fmt.Println("aaa")
 	defer func() {
 		o.IsPayNotifyCompleted = true
 		o.Save()
 	}()
 
+	fmt.Println("bbb")
 	if o.AppPayNotifyUrl == nil {
 		return
 	}
 
+	fmt.Println("ccc")
 	if _, err := url.ParseRequestURI(*o.AppPayNotifyUrl); err != nil {
 		return
 	}
 
+	fmt.Println("ddd")
 	for {
 		notifyTime := calcNextNotifyTime(o.PayNotifyCount)
+		fmt.Printf("pay notify time:%v \n", notifyTime)
+
 		<-time.After(time.Until(notifyTime))
 		if err := sendNotify(*o.AppPayNotifyUrl, &o.OrderCore); err != nil {
 			o.PayNotifyCount++
