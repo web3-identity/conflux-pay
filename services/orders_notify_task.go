@@ -39,7 +39,7 @@ func RunNotifyTask() {
 
 func runPayNotifyTask(o *models.Order) {
 	fmt.Println("run pay notify task")
-	if o.IsPayNotifyCompleted || !o.TradeState.IsStable() {
+	if o.IsPayNotifyCompleted || (!o.TradeState.IsStable() && !o.TradeState.IsSuccess()) {
 		return
 	}
 
