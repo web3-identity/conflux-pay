@@ -270,6 +270,13 @@ func (w *WechatOrderService) GetOrderDetailAndSave(tradeNo string) (*models.Wech
 			logrus.WithField("trade_no", o.TradeNo).WithField("trade_state", o.TradeState).Info("update order and detail")
 		}
 
+		refundDetial, err := w.getRemoteRefundDetail(tradeNo)
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println("ddddd")
+		models.UpdateRefundDetail(refundDetial)
+
 		return detail, nil
 	}
 }
