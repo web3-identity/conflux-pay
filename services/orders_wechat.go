@@ -222,6 +222,9 @@ func (w *WechatOrderService) GetOrderDetailAndSave(tradeNo string) (*models.Wech
 	if err != nil {
 		return nil, err
 	}
+
+	logrus.WithField("current order", o).Info("get order detail and save")
+
 	if o.TradeState.IsStable() {
 
 		fmt.Println("aaaaa")
@@ -248,16 +251,18 @@ func (w *WechatOrderService) GetOrderDetailAndSave(tradeNo string) (*models.Wech
 		}
 		return oDetail, nil
 	} else {
+		fmt.Println("eeeee")
 		detail, err := w.getRemoteOrderDetail(tradeNo, o.TradeType)
 		if err != nil {
 			return nil, err
 		}
-
+		fmt.Println("fffff")
 		v, ok := enums.ParseTradeState(*detail.TradeState)
 		if !ok {
 			return nil, fmt.Errorf("unknown trade state %v", *detail.TradeState)
 		}
 
+		fmt.Println("ggggg")
 		if *v != o.TradeState {
 			o.TradeState = *v
 			models.UpdateWechatOrderDetail(detail)
@@ -458,6 +463,7 @@ func (w *WechatOrderService) RefundNotifyHandler(tradeNo string, request *http.R
 	}
 
 	// save order
+	logrus.WithField("trade no", tradeNo).Info("get order detail and save after recieve refund notify")
 	w.GetOrderDetailAndSave(tradeNo)
 	o, err := models.FindOrderByTradeNo(*refundResp.OutTradeNo)
 	if err != nil {
