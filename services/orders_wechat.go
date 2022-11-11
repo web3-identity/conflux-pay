@@ -410,17 +410,18 @@ func (w *WechatOrderService) PayNotifyHandler(tradeNo string, request *http.Requ
 		"trade_no": transaction.OutTradeNo,
 	}).Info("received pay notifiy")
 
-	tradeState, ok := enums.ParseTradeState(*transaction.TradeState)
+	_, ok := enums.ParseTradeState(*transaction.TradeState)
 	if !ok {
 		return enums.ErrUnkownTradeState
 	}
 
 	// save order
+	w.GetOrderDetailAndSave(tradeNo)
 	o, err := models.FindOrderByTradeNo(*transaction.OutTradeNo)
 	if err != nil {
 		return err
 	}
-	o.TradeState = *tradeState
+	// o.TradeState = *tradeState
 
 	w.InvokeTradeStateChangedEvent(o)
 
@@ -448,17 +449,18 @@ func (w *WechatOrderService) RefundNotifyHandler(tradeNo string, request *http.R
 		"trade_no": refundResp.OutTradeNo,
 	}).Info("received pay notifiy")
 
-	refundState, ok := enums.ParserefundState(string(*refundResp.Status))
+	_, ok := enums.ParserefundState(string(*refundResp.Status))
 	if !ok {
 		return enums.ErrUnkownTradeState
 	}
 
 	// save order
+	w.GetOrderDetailAndSave(tradeNo)
 	o, err := models.FindOrderByTradeNo(*refundResp.OutTradeNo)
 	if err != nil {
 		return err
 	}
-	o.RefundState = *refundState
+	// o.RefundState = *refundState
 
 	w.InvokeRefundStateChangedEvent(o)
 
