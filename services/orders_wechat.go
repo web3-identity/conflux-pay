@@ -277,6 +277,11 @@ func (w *WechatOrderService) GetOrderDetailAndSave(tradeNo string) (*models.Wech
 		fmt.Println("ddddd")
 		models.UpdateRefundDetail(refundDetial)
 
+		if v, ok := enums.ParserefundState(*refundDetial.Status); ok && *v != o.RefundState {
+			o.RefundState = *v
+			models.GetDB().Save(o)
+		}
+
 		return detail, nil
 	}
 }
