@@ -93,7 +93,7 @@ func NewWechatOrderService() *WechatOrderService {
 	w := WechatOrderService{}
 	w.RegisterTradeStateChangeEvent(func(o *models.Order) {
 		go runPayNotifyTask(o)
-		go runRefundNotifyTask(o)
+		go runRefundNotifyTask(o) // 微信支付只通知成功的状态，在交易关闭后也需要处理refund notify标志
 	})
 	w.RegisterRefundStateChangeEvent(func(o *models.Order) {
 		go runRefundNotifyTask(o)
@@ -225,65 +225,65 @@ func (w *WechatOrderService) GetOrderDetailAndSave(tradeNo string) (*models.Wech
 
 	logrus.WithField("current order", o).Info("get order detail and save")
 
-	if o.TradeState.IsStable() {
+	// if o.TradeState.IsStable() {
 
-		fmt.Println("aaaaa")
-		oDetail, err := models.FindWechatOrderDetailByTradeNo(tradeNo)
-		if err != nil {
-			return nil, err
-		}
-		fmt.Println("bbbbb")
-		if o.RefundState.IsStable(o.TradeState) {
-			return oDetail, nil
-		}
-		fmt.Println("ccccc")
-		// refresh refund status
-		refundDetial, err := w.getRemoteRefundDetail(tradeNo)
-		if err != nil {
-			return nil, err
-		}
-		fmt.Println("ddddd")
-		models.UpdateRefundDetail(refundDetial)
+	// 	fmt.Println("aaaaa")
+	// 	oDetail, err := models.FindWechatOrderDetailByTradeNo(tradeNo)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	fmt.Println("bbbbb")
+	// 	if o.RefundState.IsStable(o.TradeState) {
+	// 		return oDetail, nil
+	// 	}
+	// 	fmt.Println("ccccc")
+	// 	// refresh refund status
+	// 	refundDetial, err := w.getRemoteRefundDetail(tradeNo)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	fmt.Println("ddddd")
+	// 	models.UpdateRefundDetail(refundDetial)
 
-		if v, ok := enums.ParserefundState(*refundDetial.Status); ok && *v != o.RefundState {
-			o.RefundState = *v
-			models.GetDB().Save(o)
-		}
-		return oDetail, nil
-	} else {
-		fmt.Println("eeeee")
-		detail, err := w.getRemoteOrderDetail(tradeNo, o.TradeType)
-		if err != nil {
-			return nil, err
-		}
-		fmt.Println("fffff")
-		v, ok := enums.ParseTradeState(*detail.TradeState)
-		if !ok {
-			return nil, fmt.Errorf("unknown trade state %v", *detail.TradeState)
-		}
-
-		fmt.Println("ggggg")
-		if *v != o.TradeState {
-			o.TradeState = *v
-			models.UpdateWechatOrderDetail(detail)
-			models.GetDB().Save(o)
-			logrus.WithField("trade_no", o.TradeNo).WithField("trade_state", o.TradeState).Info("update order and detail")
-		}
-
-		refundDetial, err := w.getRemoteRefundDetail(tradeNo)
-		if err != nil {
-			return nil, err
-		}
-		fmt.Println("ddddd")
-		models.UpdateRefundDetail(refundDetial)
-
-		if v, ok := enums.ParserefundState(*refundDetial.Status); ok && *v != o.RefundState {
-			o.RefundState = *v
-			models.GetDB().Save(o)
-		}
-
-		return detail, nil
+	// 	if v, ok := enums.ParserefundState(*refundDetial.Status); ok && *v != o.RefundState {
+	// 		o.RefundState = *v
+	// 		models.GetDB().Save(o)
+	// 	}
+	// 	return oDetail, nil
+	// } else {
+	fmt.Println("eeeee")
+	detail, err := w.getRemoteOrderDetail(tradeNo, o.TradeType)
+	if err != nil {
+		return nil, err
 	}
+	fmt.Println("fffff")
+	v, ok := enums.ParseTradeState(*detail.TradeState)
+	if !ok {
+		return nil, fmt.Errorf("unknown trade state %v", *detail.TradeState)
+	}
+
+	fmt.Println("ggggg")
+	if *v != o.TradeState {
+		o.TradeState = *v
+		models.UpdateWechatOrderDetail(detail)
+		models.GetDB().Save(o)
+		logrus.WithField("trade_no", o.TradeNo).WithField("trade_state", o.TradeState).Info("update order and detail")
+	}
+
+	refundDetial, err := w.getRemoteRefundDetail(tradeNo)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("ddddd")
+	models.UpdateRefundDetail(refundDetial)
+
+	if v, ok := enums.ParserefundState(*refundDetial.Status); ok && *v != o.RefundState {
+		o.RefundState = *v
+		models.GetDB().Save(o)
+	}
+
+	return detail, nil
+	// }
 }
 
 func (w *WechatOrderService) getRemoteOrderDetail(tradeNo string, tradeType enums.TradeType) (*models.WechatOrderDetail, error) {
@@ -436,7 +436,10 @@ func (w *WechatOrderService) PayNotifyHandler(tradeNo string, request *http.Requ
 	}
 
 	// save order
-	w.GetOrderDetailAndSave(tradeNo)
+	if _, err := w.GetOrderDetailAndSave(tradeNo); err != nil {
+		return err
+	}
+
 	o, err := models.FindOrderByTradeNo(*transaction.OutTradeNo)
 	if err != nil {
 		return err
@@ -476,7 +479,10 @@ func (w *WechatOrderService) RefundNotifyHandler(tradeNo string, request *http.R
 
 	// save order
 	logrus.WithField("trade no", tradeNo).Info("get order detail and save after recieve refund notify")
-	w.GetOrderDetailAndSave(tradeNo)
+	if _, err := w.GetOrderDetailAndSave(tradeNo); err != nil {
+		return err
+	}
+
 	o, err := models.FindOrderByTradeNo(*refundResp.OutTradeNo)
 	if err != nil {
 		return err
