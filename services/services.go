@@ -40,7 +40,8 @@ func Init() {
 }
 
 func StartTasks() {
-	go LoopNotify()
+	InitCloseOrderTask()
+	go RunNotifyTask()
 }
 
 // 交易号生成规则

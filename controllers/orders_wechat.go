@@ -11,6 +11,12 @@ type WechatOrderCtrl struct {
 	service services.WechatOrderService
 }
 
+func NewWechatOrderCtrl() *WechatOrderCtrl {
+	return &WechatOrderCtrl{
+		service: *services.NewWechatOrderService(),
+	}
+}
+
 // @Tags        Orders
 // @ID          MakeOrder
 // @Summary     Make Order

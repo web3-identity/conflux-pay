@@ -13,7 +13,7 @@ type OrderService struct {
 
 func NewOrderService() *OrderService {
 	return &OrderService{
-		wechatService: &WechatOrderService{},
+		wechatService: NewWechatOrderService(),
 	}
 }
 
@@ -32,7 +32,7 @@ func (w *OrderService) GetOrderSummary(tradeNo string) (*models.Order, error) {
 
 	switch o.Provider {
 	case enums.TRADE_PROVIDER_WECHAT:
-		w.wechatService.GetOrderDetailAndSave(tradeNo)
+		w.wechatService.GetOrderDetail(tradeNo)
 		return models.FindOrderByTradeNo(tradeNo)
 	}
 

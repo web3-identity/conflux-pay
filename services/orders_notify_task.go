@@ -13,108 +13,96 @@ import (
 	"github.com/web3-identity/conflux-pay/models/enums"
 )
 
-func LoopNotify() {
+func RunNotifyTask() {
 
 	lastHandledId := uint(0)
 	// 每秒循环
 	// 根据time,count,is_completed决定是否发送通知，发送完跟新time,count,is_completed
-	for {
-		time.Sleep(time.Second * 3)
-		orders, err := models.FindNeedNotifyOrders(lastHandledId)
-		if err != nil {
-			logrus.WithError(err).Error("failed find orders need to notify")
-			continue
-		}
-
-		for _, o := range orders {
-
-			runPayNotifyTask(o)
-			runRefundNotifyTask(o)
-
-			lastHandledId = o.ID
-		}
+	// for {
+	// time.Sleep(time.Second * 3)
+	orders, err := models.FindNeedNotifyOrders(lastHandledId)
+	if err != nil {
+		logrus.WithError(err).Error("failed find orders need to notify")
+		// continue
+		return
 	}
+
+	for _, o := range orders {
+		// if !o.IsPayNotifyCompleted && o.TradeState.IsStable() {
+		go runPayNotifyTask(o)
+		// }
+		// if !o.IsRefundNotifyCompleted && o.RefundState.IsStable(o.TradeState) {
+		go runRefundNotifyTask(o)
+		// }
+		// lastHandledId = o.ID
+	}
+	// }
 }
 
 func runPayNotifyTask(o *models.Order) {
+	if o.IsPayNotifyCompleted || !o.TradeState.IsStable() {
+		return
+	}
 
-	if o.AppPayNotifyUrl == nil {
+	defer func() {
 		o.IsPayNotifyCompleted = true
 		o.Save()
+	}()
+
+	if o.AppPayNotifyUrl == nil {
 		return
 	}
 
 	if _, err := url.ParseRequestURI(*o.AppPayNotifyUrl); err != nil {
-		o.IsPayNotifyCompleted = true
-		o.Save()
 		return
 	}
 
-	go func() {
-
-		for {
-			if o.IsPayNotifyCompleted {
-				return
-			}
-
-			if o.TradeState != enums.TRADE_STATE_SUCCESSS {
-				time.Sleep(time.Second * 1)
-				continue
-			}
-
-			notifyTime := calcNextNotifyTime(o.PayNotifyCount)
-			<-time.After(time.Until(notifyTime))
-			if err := sendNotify(*o.AppPayNotifyUrl, &o.OrderCore); err != nil {
-				// o.PayNotifyNextTime = calcNextNotifyTime(o.PayNotifyCount)
-				o.PayNotifyCount++
-			} else {
-				o.IsPayNotifyCompleted = true
-			}
-
+	for {
+		notifyTime := calcNextNotifyTime(o.PayNotifyCount)
+		<-time.After(time.Until(notifyTime))
+		if err := sendNotify(*o.AppPayNotifyUrl, &o.OrderCore); err != nil {
+			o.PayNotifyCount++
 			o.Save()
+			continue
+		} else {
+			return
 		}
-	}()
-
+	}
 }
 
 func runRefundNotifyTask(o *models.Order) {
+	if o.IsRefundNotifyCompleted || !o.RefundState.IsStable(o.TradeState) {
+		return
+	}
 
-	if o.AppRefundNotifyUrl == nil {
+	defer func() {
 		o.IsRefundNotifyCompleted = true
 		o.Save()
+	}()
+
+	if o.TradeState != enums.TRADE_STATE_REFUND {
+		return
+	}
+
+	if o.AppRefundNotifyUrl == nil {
 		return
 	}
 
 	if _, err := url.ParseRequestURI(*o.AppRefundNotifyUrl); err != nil {
-		o.IsRefundNotifyCompleted = true
-		o.Save()
 		return
 	}
 
-	go func() {
-
-		for {
-			if o.IsRefundNotifyCompleted {
-				return
-			}
-
-			if o.RefundState != enums.REFUND_STATE_SUCCESSS {
-				time.Sleep(time.Second * 1)
-				continue
-			}
-
-			notifyTime := calcNextNotifyTime(o.RefundNotifyCount)
-			<-time.After(time.Until(notifyTime))
-			if err := sendNotify(*o.AppRefundNotifyUrl, &o.OrderCore); err != nil {
-				o.RefundNotifyCount++
-			} else {
-				o.IsRefundNotifyCompleted = true
-			}
-
+	for {
+		notifyTime := calcNextNotifyTime(o.RefundNotifyCount)
+		<-time.After(time.Until(notifyTime))
+		if err := sendNotify(*o.AppRefundNotifyUrl, &o.OrderCore); err != nil {
+			o.RefundNotifyCount++
 			o.Save()
+			continue
+		} else {
+			return
 		}
-	}()
-
+	}
 }
 
 func sendNotify(url string, orderCore *models.OrderCore) error {

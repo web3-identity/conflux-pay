@@ -87,11 +87,11 @@ func MustGetApp(appName string) App {
 }
 
 func GetWxPayNotifyUrl(tradeNo string) *string {
-	v := fmt.Sprintf("%v%v", WechatOrderConfig.PayNotifyUrlBase, tradeNo)
+	v := fmt.Sprintf("%v%v%v", WechatOrderConfig.PayNotifyUrlBase, "/v0/orders/wechat/notify-pay/", tradeNo)
 	return &v
 }
 
 func GetWxRefundNotifyUrl(tradeNo string) *string {
-	v := fmt.Sprintf("%v%v", WechatOrderConfig.RefundNotifyUrlBase, tradeNo)
+	v := fmt.Sprintf("%v%v%v", WechatOrderConfig.RefundNotifyUrlBase, "/v0/orders/wechat/notify-refund/", tradeNo)
 	return &v
 }

@@ -20,6 +20,12 @@ definitions:
       amount:
         description: 单位为分
         type: integer
+      app_pay_notify_url:
+        description: 上层应用通知url
+        type: string
+      app_refund_notify_url:
+        description: 上层应用通知url
+        type: string
       appName:
         type: string
       code_url:
@@ -33,6 +39,16 @@ definitions:
       h5_url:
         type: string
       id:
+        type: integer
+      is_pay_notify_completed:
+        type: boolean
+      is_refund_notify_completed:
+        type: boolean
+      pay_notify_count:
+        description: PayNotifyNextTime    *time.Time `json:"pay_notify_next_time"`
+        type: integer
+      refund_notify_count:
+        description: RefundNotifyNextTime    *time.Time `json:"refund_notify_next_time"`
         type: integer
       refund_state:
         type: string
@@ -147,6 +163,8 @@ definitions:
         type: integer
       description:
         type: string
+      notify_url:
+        type: string
       time_expire:
         type: integer
       trade_type:
@@ -172,6 +190,8 @@ definitions:
     type: object
   services.RefundReq:
     properties:
+      notify_url:
+        type: string
       reason:
         type: string
     required:

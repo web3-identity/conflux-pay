@@ -72,5 +72,11 @@ func ParserefundState(code string) (*RefundState, bool) {
 }
 
 func (t RefundState) IsStable(tradeState TradeState) bool {
-	return tradeState != TRADE_STATE_REFUND || (t != REFUND_STATE_NIL && t != REFUND_STATE_PROCESSING)
+	if !tradeState.IsStable() {
+		return false
+	}
+	if tradeState != TRADE_STATE_REFUND {
+		return true
+	}
+	return t != REFUND_STATE_NIL && t != REFUND_STATE_PROCESSING
 }

@@ -318,6 +318,14 @@ const docTemplate = `{
                 "appName": {
                     "type": "string"
                 },
+                "app_pay_notify_url": {
+                    "description": "上层应用通知url",
+                    "type": "string"
+                },
+                "app_refund_notify_url": {
+                    "description": "上层应用通知url",
+                    "type": "string"
+                },
                 "code_url": {
                     "type": "string"
                 },
@@ -334,6 +342,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
+                    "type": "integer"
+                },
+                "is_pay_notify_completed": {
+                    "type": "boolean"
+                },
+                "is_refund_notify_completed": {
+                    "type": "boolean"
+                },
+                "pay_notify_count": {
+                    "description": "PayNotifyNextTime    *time.Time ` + "`" + `json:\"pay_notify_next_time\"` + "`" + `",
+                    "type": "integer"
+                },
+                "refund_notify_count": {
+                    "description": "RefundNotifyNextTime    *time.Time ` + "`" + `json:\"refund_notify_next_time\"` + "`" + `",
                     "type": "integer"
                 },
                 "refund_state": {
@@ -493,6 +515,9 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "notify_url": {
+                    "type": "string"
+                },
                 "time_expire": {
                     "type": "integer"
                 },
@@ -527,6 +552,9 @@ const docTemplate = `{
                 "reason"
             ],
             "properties": {
+                "notify_url": {
+                    "type": "string"
+                },
                 "reason": {
                     "type": "string"
                 }

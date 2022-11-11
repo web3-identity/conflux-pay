@@ -19,8 +19,8 @@ import (
 	"github.com/wechatpay-apiv3/wechatpay-go/services/refunddomestic"
 )
 
-type WechatOrderService struct {
-}
+type TradeStateChangeHandler func(o *models.Order)
+type RefundStateChangeHandler func(o *models.Order)
 
 type MakeOrderReq struct {
 	TradeType   enums.TradeType `json:"trade_type" binding:"required" swaggertype:"string"`
@@ -59,6 +59,46 @@ func (r *PrepayRequest) toH5() (val *h5.PrepayRequest) {
 		panic(err)
 	}
 	return
+}
+
+type WechatOrderService struct {
+	TradeStateChangeEvent  []TradeStateChangeHandler
+	RefundStateChangeEvent []RefundStateChangeHandler
+}
+
+func (w *WechatOrderService) RegisterTradeStateChangeEvent(h TradeStateChangeHandler) {
+	w.TradeStateChangeEvent = append(w.TradeStateChangeEvent, h)
+	// w.TradeStateChangeEvent = append(w.TradeStateChangeEvent, w.GetOrderDetailAndSave)
+}
+
+func (w *WechatOrderService) RegisterRefundStateChangeEvent(h RefundStateChangeHandler) {
+	w.RefundStateChangeEvent = append(w.RefundStateChangeEvent, h)
+}
+
+func (w *WechatOrderService) InvokeTradeStateChangedEvent(o *models.Order) {
+	fmt.Println("invoke trade state changed")
+	for _, h := range w.TradeStateChangeEvent {
+		h(o)
+	}
+}
+
+func (w *WechatOrderService) InvokeRefundStateChangedEvent(o *models.Order) {
+	fmt.Println("invoke refund state changed")
+	for _, h := range w.RefundStateChangeEvent {
+		h(o)
+	}
+}
+
+func NewWechatOrderService() *WechatOrderService {
+	w := WechatOrderService{}
+	w.RegisterTradeStateChangeEvent(func(o *models.Order) {
+		go runPayNotifyTask(o)
+		go runRefundNotifyTask(o)
+	})
+	w.RegisterRefundStateChangeEvent(func(o *models.Order) {
+		go runRefundNotifyTask(o)
+	})
+	return &w
 }
 
 // 统一wechat所有下单接口
@@ -264,7 +304,6 @@ func (w *WechatOrderService) getRemoteRefundDetail(tradeNo string) (*models.Wech
 	return models.NewWechatRefundDetailByRaw(resp), nil
 }
 
-// 没有保存状态，因为在查询状态时会保存
 func (w *WechatOrderService) Close(tradeNo string) (*models.WechatOrderDetail, error) {
 	order, err := models.FindOrderByTradeNo(tradeNo)
 	if err != nil {
@@ -350,7 +389,9 @@ func (w *WechatOrderService) autoCloseOrder(order *models.Order) {
 		logrus.WithError(err).WithField("order id", order).Error("failed to close order")
 		return
 	}
-	logrus.WithField("order id", order).Error("close order successed")
+	logrus.WithField("order id", order).Info("close order successed")
+	w.GetOrderDetailAndSave(order.TradeNo)
+	w.InvokeTradeStateChangedEvent(order)
 }
 
 // ==================== Notify ============================
@@ -380,6 +421,8 @@ func (w *WechatOrderService) PayNotifyHandler(tradeNo string, request *http.Requ
 		return err
 	}
 	o.TradeState = *tradeState
+
+	w.InvokeTradeStateChangedEvent(o)
 
 	models.UpdateWechatOrderDetail(models.NewWechatOrderDetailByRaw(transaction))
 	return models.GetDB().Save(o).Error
@@ -416,6 +459,8 @@ func (w *WechatOrderService) RefundNotifyHandler(tradeNo string, request *http.R
 		return err
 	}
 	o.RefundState = *refundState
+
+	w.InvokeRefundStateChangedEvent(o)
 
 	models.UpdateRefundDetail(models.NewWechatRefundDetailByRaw(&refundResp.Refund))
 	return models.GetDB().Save(o).Error
