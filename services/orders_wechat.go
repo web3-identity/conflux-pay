@@ -223,7 +223,7 @@ func (w *WechatOrderService) GetOrderDetailAndSave(tradeNo string) (*models.Wech
 		return nil, err
 	}
 
-	logrus.WithField("current order", o).Info("get order detail and save")
+	logrus.WithField("current order", o).Info("will get order detail and save")
 
 	// if o.TradeState.IsStable() {
 
