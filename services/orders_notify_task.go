@@ -111,7 +111,7 @@ func runRefundNotifyTask(o *models.Order) {
 }
 
 func sendNotify(url string, orderCore *models.OrderCore) error {
-	fmt.Println("send pay notify")
+	fmt.Println("send notify")
 	payBody, _ := json.Marshal(orderCore)
 	resp, err := http.DefaultClient.Post(url, "application/json", bytes.NewBuffer(payBody))
 	if err != nil {
@@ -120,6 +120,7 @@ func sendNotify(url string, orderCore *models.OrderCore) error {
 	}
 
 	if resp.StatusCode == http.StatusOK {
+		logrus.WithField("url", url).Info("success send notidy")
 		return nil
 	}
 

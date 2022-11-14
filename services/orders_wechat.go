@@ -214,7 +214,10 @@ func (w *WechatOrderService) prePay(appName string, tradeNo string, req MakeOrde
 }
 
 func (w *WechatOrderService) GetOrderDetail(tradeNo string) (*models.WechatOrderDetail, error) {
-	return models.FindWechatOrderDetailByTradeNo(tradeNo)
+	if config.WechatOrderConfig.UpdateUseNotify {
+		return models.FindWechatOrderDetailByTradeNo(tradeNo)
+	}
+	return w.GetOrderDetailAndSave(tradeNo)
 }
 
 func (w *WechatOrderService) GetOrderDetailAndSave(tradeNo string) (*models.WechatOrderDetail, error) {
@@ -224,6 +227,10 @@ func (w *WechatOrderService) GetOrderDetailAndSave(tradeNo string) (*models.Wech
 	}
 
 	logrus.WithField("current order", o).Info("will get order detail and save")
+
+	if o.IsStable() {
+		return models.FindWechatOrderDetailByTradeNo(tradeNo)
+	}
 
 	// if o.TradeState.IsStable() {
 
@@ -251,18 +258,18 @@ func (w *WechatOrderService) GetOrderDetailAndSave(tradeNo string) (*models.Wech
 	// 	}
 	// 	return oDetail, nil
 	// } else {
-	fmt.Println("eeeee")
+	// fmt.Println("eeeee")
 	detail, err := w.getRemoteOrderDetail(tradeNo, o.TradeType)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("fffff")
+	// fmt.Println("fffff")
 	v, ok := enums.ParseTradeState(*detail.TradeState)
 	if !ok {
 		return nil, fmt.Errorf("unknown trade state %v", *detail.TradeState)
 	}
 
-	fmt.Println("ggggg")
+	// fmt.Println("ggggg")
 	if *v != o.TradeState {
 		o.TradeState = *v
 		models.UpdateWechatOrderDetail(detail)
@@ -274,7 +281,7 @@ func (w *WechatOrderService) GetOrderDetailAndSave(tradeNo string) (*models.Wech
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("ddddd")
+	// fmt.Println("ddddd")
 	models.UpdateRefundDetail(refundDetial)
 
 	if v, ok := enums.ParserefundState(*refundDetial.Status); ok && *v != o.RefundState {

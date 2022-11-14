@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -24,7 +25,7 @@ func Init() {
 	Apps = getApps()
 	WechatOrderConfig = getOrderConfig("wechat")
 
-	fmt.Printf("wechat order config: %v\n", WechatOrderConfig)
+	logrus.WithField("WechatOrderConfig", WechatOrderConfig).Info("init config done")
 }
 
 var (
@@ -49,6 +50,7 @@ type App struct {
 type OrderItem struct {
 	PayNotifyUrlBase    string
 	RefundNotifyUrlBase string
+	UpdateUseNotify     bool
 }
 
 func getCompany() *Company {
@@ -71,11 +73,10 @@ func getApps() map[string]App {
 
 // providerName maybe wechat/alipay/bank
 func getOrderConfig(providerName string) *OrderItem {
-	sub := viper.GetViper().Sub("order").Sub("wechat")
-	return &OrderItem{
-		PayNotifyUrlBase:    sub.GetString("pay_notify_url_base"),
-		RefundNotifyUrlBase: sub.GetString("refund_notify_url_base"),
-	}
+	order := viper.GetViper().Sub("order")
+	var wx OrderItem
+	order.UnmarshalKey("wechat", &wx)
+	return &wx
 }
 
 func MustGetApp(appName string) App {
