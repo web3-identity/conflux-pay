@@ -24,7 +24,7 @@ func Init() {
 	Apps = getApps()
 	WechatOrderConfig = getOrderConfig("wechat")
 
-	fmt.Printf("init config done,WechatOrderConfig %v", WechatOrderConfig)
+	fmt.Printf("init config done,WechatOrderConfig %v\n", WechatOrderConfig)
 }
 
 var (
