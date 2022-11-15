@@ -20,13 +20,13 @@ definitions:
       amount:
         description: 单位为分
         type: integer
+      app_name:
+        type: string
       app_pay_notify_url:
         description: 上层应用通知url
         type: string
       app_refund_notify_url:
         description: 上层应用通知url
-        type: string
-      appName:
         type: string
       code_url:
         type: string

@@ -8,7 +8,7 @@ import (
 )
 
 type OrderCore struct {
-	AppName     string              `gorm:"type:varchar(32)"`
+	AppName     string              `gorm:"type:varchar(32)" json:"app_name"`
 	Provider    enums.TradeProvider `gorm:"uint" json:"trade_provider" swaggertype:"string"`
 	TradeNo     string              `gorm:"type:varchar(32);uniqueIndex" json:"trade_no"`
 	TradeType   enums.TradeType     `gorm:"uint" json:"trade_type" swaggertype:"string"`

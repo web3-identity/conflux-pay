@@ -315,7 +315,7 @@ const docTemplate = `{
                     "description": "单位为分",
                     "type": "integer"
                 },
-                "appName": {
+                "app_name": {
                     "type": "string"
                 },
                 "app_pay_notify_url": {
