@@ -43,23 +43,23 @@ func runPayNotifyTask(o *models.Order) {
 		return
 	}
 
-	fmt.Println("aaa")
+	// fmt.Println("aaa")
 	defer func() {
 		o.IsPayNotifyCompleted = true
 		o.Save()
 	}()
 
-	fmt.Println("bbb")
+	// fmt.Println("bbb")
 	if o.AppPayNotifyUrl == nil {
 		return
 	}
 
-	fmt.Println("ccc")
+	// fmt.Println("ccc")
 	if _, err := url.ParseRequestURI(*o.AppPayNotifyUrl); err != nil {
 		return
 	}
 
-	fmt.Println("ddd")
+	// fmt.Println("ddd")
 	for {
 		notifyTime := calcNextNotifyTime(o.PayNotifyCount)
 		fmt.Printf("pay notify time:%v \n", notifyTime)
