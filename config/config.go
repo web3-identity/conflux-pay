@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -25,7 +24,7 @@ func Init() {
 	Apps = getApps()
 	WechatOrderConfig = getOrderConfig("wechat")
 
-	logrus.WithField("WechatOrderConfig", WechatOrderConfig).Info("init config done")
+	fmt.Printf("init config done,WechatOrderConfig %v", WechatOrderConfig)
 }
 
 var (
@@ -75,7 +74,9 @@ func getApps() map[string]App {
 func getOrderConfig(providerName string) *OrderItem {
 	order := viper.GetViper().Sub("order")
 	var wx OrderItem
-	order.UnmarshalKey("wechat", &wx)
+	if err := order.UnmarshalKey(providerName, &wx); err != nil {
+		panic(err)
+	}
 	return &wx
 }
 
