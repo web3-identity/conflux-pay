@@ -14,8 +14,11 @@ apps:
     appId: rainbow-appid
     appSecret: rainbow-app-secret
     appInternalID: 2
-order:
-  notify_url_base: https://www.baidu.com/
+inNotify: # 接受 微信官方支付服务 的通知
+  wechat:
+    payNotifyUrlBase: http://127.0.0.1:8080
+    refundNotifyUrlBase: http://127.0.0.1:8080
+    enable: true
 mysql:
   host: localhost
   port: 3306

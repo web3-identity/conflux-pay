@@ -13,6 +13,27 @@ import (
 	"github.com/web3-identity/conflux-pay/models/enums"
 )
 
+var (
+	//15s/15s/30s/3m/10m/20m/30m/30m/30m/60m/3h/3h/3h/6h/6h
+	notifyIntervals = []time.Duration{
+		time.Second * 0,
+		time.Second * 15,
+		time.Second * 15,
+		time.Second * 30,
+		time.Minute * 3,
+		time.Minute * 10,
+		time.Minute * 20,
+		time.Minute * 30,
+		time.Minute * 30,
+		time.Minute * 60,
+		time.Hour * 3,
+		time.Hour * 3,
+		time.Hour * 3,
+		time.Hour * 6,
+		time.Hour * 6,
+	}
+)
+
 func RunNotifyTask() {
 
 	for {
@@ -63,8 +84,13 @@ func runPayNotifyTask(o *models.Order) {
 	for {
 		notifyTime := calcNextNotifyTime(o.PayNotifyCount)
 		fmt.Printf("pay notify time:%v \n", notifyTime)
+		if notifyTime == nil {
+			o.IsPayNotifyCompleted = true
+			o.Save()
+			return
+		}
 
-		<-time.After(time.Until(notifyTime))
+		<-time.After(time.Until(*notifyTime))
 		if err := sendNotify(*o.AppPayNotifyUrl, &o.OrderCore); err != nil {
 			o.PayNotifyCount++
 			o.Save()
@@ -99,7 +125,12 @@ func runRefundNotifyTask(o *models.Order) {
 
 	for {
 		notifyTime := calcNextNotifyTime(o.RefundNotifyCount)
-		<-time.After(time.Until(notifyTime))
+		if notifyTime == nil {
+			o.IsRefundNotifyCompleted = true
+			o.Save()
+			return
+		}
+		<-time.After(time.Until(*notifyTime))
 		if err := sendNotify(*o.AppRefundNotifyUrl, &o.OrderCore); err != nil {
 			o.RefundNotifyCount++
 			o.Save()
@@ -128,8 +159,12 @@ func sendNotify(url string, orderCore *models.OrderCore) error {
 	return fmt.Errorf("failed status: %v", resp.Status)
 }
 
-func calcNextNotifyTime(count int) time.Time {
-	t := time.Now().Add(time.Second * time.Duration(count))
+func calcNextNotifyTime(count int) *time.Time {
+	if len(notifyIntervals) <= count {
+		return nil
+	}
+	// t := time.Now().Add(time.Second * time.Duration(count))
+	t := time.Now().Add(notifyIntervals[count])
 	fmt.Printf("now: %v, notify time: %v", time.Now(), t)
-	return t
+	return &t
 }

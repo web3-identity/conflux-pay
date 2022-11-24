@@ -30,7 +30,7 @@ func Init() {
 var (
 	CompanyVal        *Company
 	Apps              map[string]App
-	WechatOrderConfig *OrderItem
+	WechatOrderConfig *InNotifyItem
 )
 
 type Company struct {
@@ -46,10 +46,10 @@ type App struct {
 	AppInternalID uint
 }
 
-type OrderItem struct {
+type InNotifyItem struct {
 	PayNotifyUrlBase    string
 	RefundNotifyUrlBase string
-	UpdateUseNotify     bool
+	Enable              bool
 }
 
 func getCompany() *Company {
@@ -71,9 +71,9 @@ func getApps() map[string]App {
 }
 
 // providerName maybe wechat/alipay/bank
-func getOrderConfig(providerName string) *OrderItem {
-	order := viper.GetViper().Sub("order")
-	var wx OrderItem
+func getOrderConfig(providerName string) *InNotifyItem {
+	order := viper.GetViper().Sub("inNotify")
+	var wx InNotifyItem
 	if err := order.UnmarshalKey(providerName, &wx); err != nil {
 		panic(err)
 	}
@@ -89,11 +89,17 @@ func MustGetApp(appName string) App {
 }
 
 func GetWxPayNotifyUrl(tradeNo string) *string {
+	if !WechatOrderConfig.Enable {
+		return nil
+	}
 	v := fmt.Sprintf("%v%v%v", WechatOrderConfig.PayNotifyUrlBase, "/v0/orders/wechat/notify-pay/", tradeNo)
 	return &v
 }
 
 func GetWxRefundNotifyUrl(tradeNo string) *string {
+	if !WechatOrderConfig.Enable {
+		return nil
+	}
 	v := fmt.Sprintf("%v%v%v", WechatOrderConfig.RefundNotifyUrlBase, "/v0/orders/wechat/notify-refund/", tradeNo)
 	return &v
 }

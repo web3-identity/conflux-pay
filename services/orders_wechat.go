@@ -214,7 +214,7 @@ func (w *WechatOrderService) prePay(appName string, tradeNo string, req MakeOrde
 }
 
 func (w *WechatOrderService) GetOrderDetail(tradeNo string) (*models.WechatOrderDetail, error) {
-	if config.WechatOrderConfig.UpdateUseNotify {
+	if config.WechatOrderConfig.Enable {
 		return models.FindWechatOrderDetailByTradeNo(tradeNo)
 	}
 	return w.GetOrderDetailAndSave(tradeNo)
