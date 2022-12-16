@@ -12,6 +12,7 @@ import (
 	"github.com/web3-identity/conflux-pay/models"
 	"github.com/web3-identity/conflux-pay/models/enums"
 	cns_errors "github.com/web3-identity/conflux-pay/pay_errors"
+	"github.com/web3-identity/conflux-pay/utils"
 	"github.com/wechatpay-apiv3/wechatpay-go/core"
 	"github.com/wechatpay-apiv3/wechatpay-go/services/payments"
 	"github.com/wechatpay-apiv3/wechatpay-go/services/payments/h5"
@@ -177,10 +178,16 @@ func (w *WechatOrderService) prePay(appName string, tradeNo string, req MakeOrde
 	app := config.MustGetApp(appName)
 
 	expire := time.Unix(req.TimeExpire, 0)
+	descr := req.Description
+	if descr != nil {
+		tmp := utils.ReplaceEmoji(*req.Description, "[e]")
+		descr = &tmp
+	}
+
 	prepayReq := PrepayRequest{
 		Appid:       &app.AppId,
 		Mchid:       &config.CompanyVal.MchID,
-		Description: req.Description,
+		Description: descr,
 		OutTradeNo:  &tradeNo,
 		TimeExpire:  &expire,
 		Amount:      &native.Amount{Total: &req.Amount},
