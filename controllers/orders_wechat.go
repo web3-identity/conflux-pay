@@ -7,13 +7,13 @@ import (
 	"github.com/web3-identity/conflux-pay/utils/ginutils"
 )
 
-type WechatOrderCtrl struct {
-	service services.WechatOrderService
+type OrderCtrl struct {
+	service services.OrderService
 }
 
-func NewWechatOrderCtrl() *WechatOrderCtrl {
-	return &WechatOrderCtrl{
-		service: *services.NewWechatOrderService(),
+func NewOrderCtrl() *OrderCtrl {
+	return &OrderCtrl{
+		service: *services.NewOrderService(),
 	}
 }
 
@@ -27,7 +27,7 @@ func NewWechatOrderCtrl() *WechatOrderCtrl {
 // @Failure     400          {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
 // @Failure     500          {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
 // @Router      /orders/wechat [post]
-func (w *WechatOrderCtrl) MakeOrder(c *gin.Context) {
+func (w *OrderCtrl) MakeOrder(c *gin.Context) {
 	req := services.MakeOrderReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		ginutils.RenderRespError(c, err, cns_errors.ERR_INVALID_REQUEST_COMMON)
@@ -48,7 +48,7 @@ func (w *WechatOrderCtrl) MakeOrder(c *gin.Context) {
 // @Failure     400        {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
 // @Failure     500        {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
 // @Router      /orders/wechat/refresh-url/{trade_no} [put]
-func (w *WechatOrderCtrl) RefreshPayUrl(c *gin.Context) {
+func (w *OrderCtrl) RefreshPayUrl(c *gin.Context) {
 	trandeNo := c.Param("trade_no")
 	o, err := w.service.RefreshUrl(trandeNo)
 	ginutils.RenderResp(c, o, err)
@@ -64,9 +64,9 @@ func (w *WechatOrderCtrl) RefreshPayUrl(c *gin.Context) {
 // @Failure     400      {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
 // @Failure     500      {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
 // @Router      /orders/wechat/{trade_no} [get]
-func (w *WechatOrderCtrl) GetOrder(c *gin.Context) {
+func (w *OrderCtrl) GetOrder(c *gin.Context) {
 	trandeNo := c.Param("trade_no")
-	o, err := w.service.GetOrderDetail(trandeNo)
+	o, err := w.service.GetOrder(trandeNo)
 	ginutils.RenderResp(c, o, err)
 }
 
@@ -81,7 +81,7 @@ func (w *WechatOrderCtrl) GetOrder(c *gin.Context) {
 // @Failure     400      {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
 // @Failure     500      {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
 // @Router      /orders/wechat/refund/{trade_no} [put]
-func (w *WechatOrderCtrl) Refund(c *gin.Context) {
+func (w *OrderCtrl) Refund(c *gin.Context) {
 	trandeNo := c.Param("trade_no")
 	req := services.RefundReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -102,19 +102,19 @@ func (w *WechatOrderCtrl) Refund(c *gin.Context) {
 // @Failure     400      {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
 // @Failure     500      {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
 // @Router      /orders/wechat/close/{trade_no} [put]
-func (w *WechatOrderCtrl) Close(c *gin.Context) {
+func (w *OrderCtrl) Close(c *gin.Context) {
 	trandeNo := c.Param("trade_no")
 	o, err := w.service.Close(trandeNo)
 	ginutils.RenderResp(c, o, err)
 }
 
-func (w *WechatOrderCtrl) ReceivePayNotify(c *gin.Context) {
+func (w *OrderCtrl) ReceivePayNotify(c *gin.Context) {
 	trandeNo := c.Param("trade_no")
 	err := w.service.PayNotifyHandler(trandeNo, c.Request)
 	ginutils.RenderResp(c, nil, err)
 }
 
-func (w *WechatOrderCtrl) ReceiveRefundNotify(c *gin.Context) {
+func (w *OrderCtrl) ReceiveRefundNotify(c *gin.Context) {
 	trandeNo := c.Param("trade_no")
 	err := w.service.RefundNotifyHandler(trandeNo, c.Request)
 	ginutils.RenderResp(c, nil, err)

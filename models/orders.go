@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+
 	"github.com/web3-identity/conflux-pay/models/enums"
 )
 
@@ -49,6 +50,17 @@ func (o *Order) Save() error {
 		logrus.WithError(err).Error("failed save order")
 	}
 	return err
+}
+
+func (o *Order) UpdateStates(tradeState enums.TradeState, refundState enums.RefundState) {
+	if tradeState == o.TradeState && refundState == o.RefundState {
+		return
+	}
+
+	o.TradeState = tradeState
+	o.RefundState = refundState
+
+	GetDB().Save(o)
 }
 
 func FindOrderByTradeNo(tradeNo string) (*Order, error) {

@@ -15,7 +15,8 @@ type TradeState uint
 // USERPAYING：用户支付中（仅付款码支付会返回）
 // PAYERROR：支付失败（仅付款码支付会返回）
 const (
-	TRADE_STATE_SUCCESSS = iota + 1
+	TRADE_STATE_NIL TradeState = iota
+	TRADE_STATE_SUCCESSS
 	TRADE_STATE_REFUND
 	TRADE_STATE_NOTPAY
 	TRADE_STATE_CLOSED
