@@ -42,7 +42,7 @@ func (w *WechatTrader) PreCreate(tradeNo string, req MakeOrderReq) (*models.Orde
 		OutTradeNo:  &tradeNo,
 		TimeExpire:  &expire,
 		Amount:      &native.Amount{Total: &req.Amount},
-		NotifyUrl:   config.GetPayNotifyUrl(tradeNo),
+		NotifyUrl:   config.GetPayNotifyUrl(req.MustGetTradeProvider(), tradeNo),
 	}
 
 	orderCore := &models.OrderCore{
@@ -145,7 +145,7 @@ func (w *WechatTrader) Refund(tradeNo string, req RefundReq) error {
 				Refund:   core.Int64(int64(order.Amount)),
 				Total:    core.Int64(int64(order.Amount)),
 			},
-			NotifyUrl: config.GetRefundNotifyUrl(tradeNo),
+			NotifyUrl: config.GetRefundNotifyUrl(order.Provider, tradeNo),
 		},
 	)
 	if err != nil {

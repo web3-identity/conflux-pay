@@ -146,7 +146,7 @@ func (w *OrderService) GetOrder(tradeNo string) (*models.Order, error) {
 		return nil, err
 	}
 
-	if !config.NotifyConfig.Enable {
+	if !config.NotifyConfig[o.Provider].Enable {
 		return o, nil
 	}
 
