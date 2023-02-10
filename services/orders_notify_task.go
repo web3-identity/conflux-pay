@@ -102,6 +102,10 @@ func runPayNotifyTask(o *models.Order) {
 }
 
 func runRefundNotifyTask(o *models.Order) {
+	if o == nil {
+		return
+	}
+
 	if o.IsRefundNotifyCompleted || !o.RefundState.IsStable(o.TradeState) {
 		return
 	}

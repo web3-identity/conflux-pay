@@ -18,11 +18,15 @@ import (
 )
 
 type WechatTrader struct {
+	app config.App
+}
+
+func NewWechatTrader(appName string) *WechatTrader {
+	return &WechatTrader{app: config.MustGetApp(appName)}
 }
 
 // precreate
-func (w *WechatTrader) PreCreate(appName string, tradeNo string, req MakeOrderReq) (*models.OrderCore, error) {
-	app := config.MustGetApp(appName)
+func (w *WechatTrader) PreCreate(tradeNo string, req MakeOrderReq) (*models.OrderCore, error) {
 
 	expire := time.Unix(req.TimeExpire, 0)
 	descr := req.Description
@@ -32,8 +36,8 @@ func (w *WechatTrader) PreCreate(appName string, tradeNo string, req MakeOrderRe
 	}
 
 	prepayReq := PrepayRequest{
-		Appid:       &app.AppId,
-		Mchid:       &config.CompanyVal.MchID,
+		Appid:       &w.app.AppIdWechat,
+		Mchid:       &config.CompanyVal.Wechat.MchID,
 		Description: descr,
 		OutTradeNo:  &tradeNo,
 		TimeExpire:  &expire,
@@ -79,7 +83,7 @@ func (w *WechatTrader) GetTradeState(tradeNo string) (enums.TradeState, error) {
 	switch o.TradeType {
 	case enums.TRADE_TYPE_NATIVE:
 		resp, _, err := wxNativeService.QueryOrderByOutTradeNo(context.Background(), native.QueryOrderByOutTradeNoRequest{
-			Mchid:      &config.CompanyVal.MchID,
+			Mchid:      &config.CompanyVal.Wechat.MchID,
 			OutTradeNo: &tradeNo,
 		})
 		logrus.WithField("trade_no", tradeNo).WithField("response", resp).WithError(err).Info("query order detail complete remote")
@@ -89,7 +93,7 @@ func (w *WechatTrader) GetTradeState(tradeNo string) (enums.TradeState, error) {
 		tx = resp
 	case enums.TRADE_TYPE_H5:
 		resp, _, err := wxH5Service.QueryOrderByOutTradeNo(context.Background(), h5.QueryOrderByOutTradeNoRequest{
-			Mchid:      &config.CompanyVal.MchID,
+			Mchid:      &config.CompanyVal.Wechat.MchID,
 			OutTradeNo: &tradeNo,
 		})
 		logrus.WithField("trade_no", tradeNo).WithField("response", resp).WithError(err).Info("query order detail complete remote")
@@ -112,20 +116,20 @@ func (w *WechatTrader) GetTradeState(tradeNo string) (enums.TradeState, error) {
 
 // refund
 func (w *WechatTrader) Refund(tradeNo string, req RefundReq) error {
-	oSummary, err := models.FindOrderByTradeNo(tradeNo)
+	order, err := models.FindOrderByTradeNo(tradeNo)
 	if err != nil {
 		return err
 	}
 
-	oSummary.AppPayNotifyUrl = req.NotifyUrl
-	if err = oSummary.Save(); err != nil {
+	order.AppPayNotifyUrl = req.NotifyUrl
+	if err = order.Save(); err != nil {
 		return err
 	}
 
-	order, err := models.FindWechatOrderDetailByTradeNo(tradeNo)
-	if err != nil {
-		return err
-	}
+	// order, err := models.FindWechatOrderDetailByTradeNo(tradeNo)
+	// if err != nil {
+	// 	return err
+	// }
 
 	if order.Amount == 0 {
 		return fmt.Errorf("nothing could be refund")
@@ -133,8 +137,8 @@ func (w *WechatTrader) Refund(tradeNo string, req RefundReq) error {
 
 	_, _, err = wxRefundService.Create(context.Background(),
 		refunddomestic.CreateRequest{
-			OutTradeNo:  order.TradeNo,
-			OutRefundNo: order.TradeNo,
+			OutTradeNo:  &order.TradeNo,
+			OutRefundNo: &order.TradeNo,
 			Reason:      &req.Reason,
 			Amount: &refunddomestic.AmountReq{
 				Currency: core.String("CNY"),
@@ -170,6 +174,8 @@ func (w *WechatTrader) GetRefundState(tradeNo string) (enums.RefundState, error)
 
 // close
 func (w *WechatTrader) Close(tradeNo string) error {
+	logrus.Info("close wechat order")
+
 	order, err := models.FindOrderByTradeNo(tradeNo)
 	if err != nil {
 		return err
@@ -177,21 +183,21 @@ func (w *WechatTrader) Close(tradeNo string) error {
 
 	switch order.TradeType {
 	case enums.TRADE_TYPE_NATIVE:
-		result, err := wxNativeService.CloseOrder(context.Background(), native.CloseOrderRequest{
-			Mchid:      &config.CompanyVal.MchID,
+		_, err := wxNativeService.CloseOrder(context.Background(), native.CloseOrderRequest{
+			Mchid:      &config.CompanyVal.Wechat.MchID,
 			OutTradeNo: &order.TradeNo,
 		})
-		logrus.WithField("trade_no", order.TradeNo).WithField("result", result).WithError(err).Info("close order complete remote")
+		logrus.WithField("trade_no", order.TradeNo).WithError(err).Info("close order complete remote")
 		if err != nil {
 			return err
 		}
 
 	case enums.TRADE_TYPE_H5:
-		result, err := wxH5Service.CloseOrder(context.Background(), h5.CloseOrderRequest{
-			Mchid:      &config.CompanyVal.MchID,
+		_, err := wxH5Service.CloseOrder(context.Background(), h5.CloseOrderRequest{
+			Mchid:      &config.CompanyVal.Wechat.MchID,
 			OutTradeNo: &order.TradeNo,
 		})
-		logrus.WithField("trade_no", order.TradeNo).WithField("result", result).WithError(err).Info("close order complete remote")
+		logrus.WithField("trade_no", order.TradeNo).WithError(err).Info("close order complete remote")
 		if err != nil {
 			return err
 		}

@@ -34,14 +34,25 @@ var (
 )
 
 type Company struct {
-	MchID                      string
-	MchCertificateSerialNumber string
-	MchAPIv3Key                string
-	MchPrivateKey              string
+	Wechat CompanyWechat
+	Alipay CompanyAlipay
+}
+
+type CompanyWechat struct {
+	MchID         string
+	MchCertNo     string
+	MchApiV3Key   string
+	MchPrivateKey string
+}
+
+type CompanyAlipay struct {
+	PrivateKey      string
+	AlipayPublicKey string
 }
 
 type App struct {
-	AppId         string
+	AppIdAlipay   string
+	AppIdWechat   string
 	AppSecretHash string
 	AppInternalID uint
 }
@@ -53,13 +64,9 @@ type InNotifyItem struct {
 }
 
 func getCompany() *Company {
-	sub := viper.GetViper().Sub("company")
-	return &Company{
-		MchID:                      sub.GetString("mchid"),
-		MchCertificateSerialNumber: sub.GetString("mchCertNo"),
-		MchAPIv3Key:                sub.GetString("mchAPIv3Key"),
-		MchPrivateKey:              sub.GetString("mchPrivateKey"),
-	}
+	var v Company
+	viper.UnmarshalKey("company", &v)
+	return &v
 }
 
 func getApps() map[string]App {

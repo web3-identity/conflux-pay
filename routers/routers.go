@@ -22,7 +22,6 @@ func SetupRoutes(router *gin.Engine) {
 			order.PUT("/refresh-url/:trade_no", ctrl.RefreshPayUrl)
 			order.PUT("/refund/:trade_no", ctrl.Refund)
 			order.PUT("/close/:trade_no", ctrl.Close)
-			order.GET("/:trade_no", ctrl.GetOrder)
 
 			order.POST("/notify-pay/:trade_no", ctrl.ReceivePayNotify)
 			order.POST("/notify-refund/:trade_no", ctrl.ReceiveRefundNotify)

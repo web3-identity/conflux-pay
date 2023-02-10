@@ -54,26 +54,26 @@ func genTradeNo(userID uint, provider enums.TradeProvider) string {
 func newWechatClient() (*core.Client, *notify.Handler, error) {
 	ctx := context.Background()
 	// 使用商户私钥等初始化 client，并使它具有自动定时获取微信支付平台证书的能力
-	company := config.CompanyVal
+	wechat := config.CompanyVal.Wechat
 
 	// 使用 utils 提供的函数从本地文件中加载商户私钥，商户私钥会用来生成请求的签名
-	mchPrivateKey, err := utils.LoadPrivateKey(company.MchPrivateKey)
+	mchPrivateKey, err := utils.LoadPrivateKey(wechat.MchPrivateKey)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	opts := []core.ClientOption{
 		option.WithWechatPayAutoAuthCipher(
-			company.MchID,
-			company.MchCertificateSerialNumber,
+			wechat.MchID,
+			wechat.MchCertNo,
 			mchPrivateKey,
-			company.MchAPIv3Key),
+			wechat.MchApiV3Key),
 	}
 
 	// 2. 获取商户号对应的微信支付平台证书访问器
-	certificateVisitor := downloader.MgrInstance().GetCertificateVisitor(company.MchID)
+	certificateVisitor := downloader.MgrInstance().GetCertificateVisitor(wechat.MchID)
 	// 3. 使用证书访问器初始化 `notify.Handler`
-	handler := notify.NewNotifyHandler(company.MchAPIv3Key, verifiers.NewSHA256WithRSAVerifier(certificateVisitor))
+	handler := notify.NewNotifyHandler(wechat.MchApiV3Key, verifiers.NewSHA256WithRSAVerifier(certificateVisitor))
 
 	client, err := core.NewClient(ctx, opts...)
 	if err != nil {

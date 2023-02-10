@@ -19,7 +19,7 @@ type OrderCore struct {
 	Description *string             `gorm:"type:varchar(255)" json:"description"`
 	TimeExpire  *time.Time          `json:"time_expire,omitempty"`
 	CodeUrl     *string             `gorm:"type:varchar(255)" json:"code_url,omitempty"`
-	H5Url       *string             `gorm:"type:varchar(255)" json:"h5_url,omitempty"`
+	H5Url       *string             `gorm:"type:varchar(1023)" json:"h5_url,omitempty"`
 }
 
 func (o *OrderCore) IsStable() bool {

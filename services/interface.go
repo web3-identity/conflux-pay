@@ -7,7 +7,7 @@ import (
 
 type Trader interface {
 	// precreate
-	PreCreate(appName string, tradeNo string, req MakeOrderReq) (*models.OrderCore, error)
+	PreCreate(tradeNo string, req MakeOrderReq) (*models.OrderCore, error)
 	// get trade state
 	GetTradeState(tradeNo string) (enums.TradeState, error)
 	// refund

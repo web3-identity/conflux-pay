@@ -8,7 +8,11 @@ import (
 type TradeType uint
 
 const (
+	// 对应微信 NATIVE;
+	// 对应支付宝 当面付
 	TRADE_TYPE_NATIVE = iota + 1
+	// 对应微信 H5;
+	// 支付宝 电脑网站支付 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22
 	TRADE_TYPE_H5
 )
 

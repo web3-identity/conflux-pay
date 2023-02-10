@@ -2,8 +2,10 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -18,12 +20,17 @@ import (
 type OrderService struct {
 	TradeStateChangeEvent  []TradeStateChangeHandler
 	RefundStateChangeEvent []RefundStateChangeHandler
-	wxTrader               WechatTrader
-	alTrader               Trader
+	wxTraders              map[string]*WechatTrader
+	alTraders              map[string]*AlipayTrader
+	traderLock             sync.Mutex
 }
 
 func NewOrderService() *OrderService {
-	w := OrderService{}
+	w := OrderService{
+		wxTraders: make(map[string]*WechatTrader),
+		alTraders: make(map[string]*AlipayTrader),
+	}
+
 	w.RegisterTradeStateChangeEvent(func(o *models.Order) {
 		go runPayNotifyTask(o)
 		go runRefundNotifyTask(o) // 微信支付只通知成功的状态，在交易关闭后也需要处理refund notify标志
@@ -34,14 +41,40 @@ func NewOrderService() *OrderService {
 	return &w
 }
 
-func (w *OrderService) GetTrader(provider enums.TradeProvider) Trader {
+func (w *OrderService) GetTrader(appName string, provider enums.TradeProvider) (Trader, error) {
+	app := config.MustGetApp(appName)
+	appId := app.AppIdAlipay
 	switch provider {
-	case enums.TRADE_PROVIDER_WECHAT:
-		return &w.wxTrader
 	case enums.TRADE_PROVIDER_ALIPAY:
-		return w.alTrader
+		if _, ok := w.alTraders[appId]; !ok {
+			w.traderLock.Lock()
+			t, err := NewAlipayTrader(appName)
+			if err != nil {
+				w.traderLock.Unlock()
+				return nil, err
+			}
+			w.alTraders[appName] = t
+			w.traderLock.Unlock()
+		}
+		return w.alTraders[appName], nil
+	case enums.TRADE_PROVIDER_WECHAT:
+		if _, ok := w.wxTraders[appId]; !ok {
+			w.traderLock.Lock()
+			t := NewWechatTrader(appName)
+			w.wxTraders[appName] = t
+			w.traderLock.Unlock()
+		}
+		return w.wxTraders[appName], nil
 	}
-	return nil
+	return nil, errors.New("unkown provider")
+}
+
+func (w *OrderService) MustGetTrader(appName string, provider enums.TradeProvider) Trader {
+	t, err := w.GetTrader(appName, provider)
+	if err != nil {
+		panic(err)
+	}
+	return t
 }
 
 func (w *OrderService) RegisterTradeStateChangeEvent(h TradeStateChangeHandler) {
@@ -73,10 +106,11 @@ func (w *OrderService) InvokeRefundStateChangedEvent(o *models.Order) {
 
 func (w *OrderService) MakeOrder(appName string, req MakeOrderReq) (*models.Order, error) {
 	app := config.MustGetApp(appName)
-	no := genTradeNo(app.AppInternalID, enums.TRADE_PROVIDER_WECHAT)
+	no := genTradeNo(app.AppInternalID, req.MustGetTradeProvider())
 
 	expire := time.Unix(req.TimeExpire, 0)
-	orderResp, err := w.GetTrader(req.TradeProvider).PreCreate(appName, no, req)
+
+	orderResp, err := w.MustGetTrader(appName, req.MustGetTradeProvider()).PreCreate(no, req)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +119,7 @@ func (w *OrderService) MakeOrder(appName string, req MakeOrderReq) (*models.Orde
 	order := &models.Order{
 		OrderCore: models.OrderCore{
 			AppName:     appName,
-			Provider:    enums.TRADE_PROVIDER_WECHAT,
+			Provider:    req.MustGetTradeProvider(),
 			TradeNo:     no,
 			TradeType:   req.TradeType,
 			TradeState:  enums.TRADE_STATE_NOTPAY,
@@ -101,41 +135,30 @@ func (w *OrderService) MakeOrder(appName string, req MakeOrderReq) (*models.Orde
 	}
 
 	order.Save()
-
-	// detail, err := w.getRemoteOrderDetail(order.TradeNo, order.TradeType)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// models.GetDB().Save(detail)
-
 	go w.autoCloseOrder(order)
 
 	return order, nil
 }
 
 func (w *OrderService) GetOrder(tradeNo string) (*models.Order, error) {
-	if config.WechatOrderConfig.Enable {
-		order, err := models.FindOrderByTradeNo(tradeNo)
-		if err != nil {
-			return nil, err
-		}
-		return order, nil
-	}
-
 	o, err := models.FindOrderByTradeNo(tradeNo)
 	if err != nil {
 		return nil, err
 	}
 
+	if !config.WechatOrderConfig.Enable {
+		return o, nil
+	}
+
 	if !o.IsStable() {
-		tradeState, err := w.GetTrader(o.Provider).GetTradeState(tradeNo)
+		tradeState, err := w.MustGetTrader(o.AppName, o.Provider).GetTradeState(tradeNo)
 		if err != nil {
 			return nil, err
 		}
 
 		refundState := o.RefundState
 		if tradeState == enums.TRADE_STATE_REFUND {
-			_refundState, err := w.GetTrader(o.Provider).GetRefundState(tradeNo)
+			_refundState, err := w.MustGetTrader(o.AppName, o.Provider).GetRefundState(tradeNo)
 			if err != nil {
 				return nil, err
 			}
@@ -165,7 +188,7 @@ func (w *OrderService) RefreshUrl(tradeNo string) (*MakeOrderResp, error) {
 		return nil, cns_errors.ERR_ORDER_COMPLETED
 	}
 
-	resp, err := w.GetTrader(o.Provider).PreCreate(o.AppName, tradeNo, MakeOrderReq{
+	resp, err := w.MustGetTrader(o.AppName, o.Provider).PreCreate(tradeNo, MakeOrderReq{
 		TradeType:   o.TradeType,
 		Description: o.Description,
 		TimeExpire:  o.TimeExpire.Unix(),
@@ -186,7 +209,7 @@ func (w *OrderService) Refund(tradeNo string, req RefundReq) (*models.OrderCore,
 	if err != nil {
 		return nil, err
 	}
-	if err = w.GetTrader(o.Provider).Refund(o.TradeNo, req); err != nil {
+	if err = w.MustGetTrader(o.AppName, o.Provider).Refund(o.TradeNo, req); err != nil {
 		return nil, err
 	}
 	return w.getOrderCore(tradeNo)
@@ -197,7 +220,7 @@ func (w *OrderService) Close(tradeNo string) (*models.OrderCore, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err = w.GetTrader(o.Provider).Close(o.TradeNo); err != nil {
+	if err = w.MustGetTrader(o.AppName, o.Provider).Close(o.TradeNo); err != nil {
 		return nil, err
 	}
 	return w.getOrderCore(tradeNo)
@@ -418,7 +441,7 @@ func (w *OrderService) Close(tradeNo string) (*models.OrderCore, error) {
 func (w *OrderService) autoCloseOrder(order *models.Order) {
 	timer := time.NewTimer(time.Until(*order.TimeExpire))
 	<-timer.C
-	if err := w.GetTrader(order.Provider).Close(order.TradeNo); err != nil {
+	if err := w.MustGetTrader(order.AppName, order.Provider).Close(order.TradeNo); err != nil {
 		logrus.WithError(err).WithField("order id", order).Error("failed to close order")
 		return
 	}
@@ -467,11 +490,6 @@ func (w *OrderService) PayNotifyHandler(tradeNo string, request *http.Request) e
 
 	models.UpdateWechatOrderDetail(models.NewWechatOrderDetailByRaw(transaction))
 	return models.GetDB().Save(o).Error
-}
-
-type refundWithRefundStatus struct {
-	refunddomestic.Refund
-	RefundStatus *string `gorm:"-" json:"refund_status"`
 }
 
 func (w *OrderService) RefundNotifyHandler(tradeNo string, request *http.Request) error {
