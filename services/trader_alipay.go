@@ -140,7 +140,13 @@ func (a *AlipayTrader) GetTradeState(tradeNo string) (enums.TradeState, error) {
 	if !res.IsSuccess() {
 		return enums.TRADE_STATE_NIL, fmt.Errorf("msg:%v, sub msg:%v", res.Content.Msg, res.Content.SubMsg)
 	}
-	return convertAlTradeState(res.Content.TradeStatus), nil
+
+	_, err = a.GetRefundState(tradeNo)
+	if err != nil {
+		return convertAlTradeState(res.Content.TradeStatus, false), nil
+	}
+
+	return convertAlTradeState(res.Content.TradeStatus, true), nil
 }
 
 // refund
@@ -202,12 +208,15 @@ func (a *AlipayTrader) Close(tradeNo string) error {
 	return nil
 }
 
-func convertAlTradeState(status alipay.TradeStatus) enums.TradeState {
+func convertAlTradeState(status alipay.TradeStatus, isRefund bool) enums.TradeState {
 	switch status {
 	case alipay.TradeStatusWaitBuyerPay:
 		return enums.TRADE_STATE_NOTPAY
 	case alipay.TradeStatusClosed:
-		return enums.TRADE_STATE_CLOSED
+		if !isRefund {
+			return enums.TRADE_STATE_CLOSED
+		}
+		return enums.TRADE_STATE_REFUND
 	case alipay.TradeStatusSuccess:
 		return enums.TRADE_STATE_SUCCESSS
 	// TODO: 交易结束不可退款，微信没有对应状态，暂用SUCCESS

@@ -146,7 +146,7 @@ func (w *OrderService) GetOrder(tradeNo string) (*models.Order, error) {
 		return nil, err
 	}
 
-	if !config.WechatOrderConfig.Enable {
+	if !config.NotifyConfig.Enable {
 		return o, nil
 	}
 

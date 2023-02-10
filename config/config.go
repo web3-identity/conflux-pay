@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/spf13/viper"
+	"github.com/web3-identity/conflux-pay/models/enums"
 )
 
 func Init() {
@@ -22,15 +23,18 @@ func Init() {
 
 	CompanyVal = getCompany()
 	Apps = getApps()
-	WechatOrderConfig = getOrderConfig("wechat")
 
-	fmt.Printf("init config done,WechatOrderConfig %v\n", WechatOrderConfig)
+	NotifyConfig = make(map[enums.TradeProvider]*InNotifyItem)
+	NotifyConfig[enums.TRADE_PROVIDER_WECHAT] = getOrderConfig("wechat")
+	NotifyConfig[enums.TRADE_PROVIDER_ALIPAY] = getOrderConfig("alipay")
+
+	fmt.Printf("init config done, notify config %v\n", NotifyConfig)
 }
 
 var (
-	CompanyVal        *Company
-	Apps              map[string]App
-	WechatOrderConfig *InNotifyItem
+	CompanyVal   *Company
+	Apps         map[string]App
+	NotifyConfig map[enums.TradeProvider]*InNotifyItem
 )
 
 type Company struct {
@@ -80,11 +84,11 @@ func getApps() map[string]App {
 // providerName maybe wechat/alipay/bank
 func getOrderConfig(providerName string) *InNotifyItem {
 	order := viper.GetViper().Sub("inNotify")
-	var wx InNotifyItem
-	if err := order.UnmarshalKey(providerName, &wx); err != nil {
+	var notify InNotifyItem
+	if err := order.UnmarshalKey(providerName, &notify); err != nil {
 		panic(err)
 	}
-	return &wx
+	return &notify
 }
 
 func MustGetApp(appName string) App {
@@ -95,18 +99,18 @@ func MustGetApp(appName string) App {
 	return v
 }
 
-func GetWxPayNotifyUrl(tradeNo string) *string {
-	if !WechatOrderConfig.Enable {
+func GetPayNotifyUrl(provider enums.TradeProvider, tradeNo string) *string {
+	if !NotifyConfig[provider].Enable {
 		return nil
 	}
-	v := fmt.Sprintf("%v%v%v", WechatOrderConfig.PayNotifyUrlBase, "/v0/orders/wechat/notify-pay/", tradeNo)
+	v := fmt.Sprintf("%v%v%v", NotifyConfig[provider].PayNotifyUrlBase, "/v0/orders/wechat/notify-pay/", tradeNo)
 	return &v
 }
 
-func GetWxRefundNotifyUrl(tradeNo string) *string {
-	if !WechatOrderConfig.Enable {
+func GetRefundNotifyUrl(provider enums.TradeProvider, tradeNo string) *string {
+	if !NotifyConfig[provider].Enable {
 		return nil
 	}
-	v := fmt.Sprintf("%v%v%v", WechatOrderConfig.RefundNotifyUrlBase, "/v0/orders/wechat/notify-refund/", tradeNo)
+	v := fmt.Sprintf("%v%v%v", NotifyConfig[provider].RefundNotifyUrlBase, "/v0/orders/wechat/notify-refund/", tradeNo)
 	return &v
 }
