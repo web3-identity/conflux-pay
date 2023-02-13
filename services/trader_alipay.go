@@ -108,6 +108,8 @@ func (a *AlipayTrader) PreCreate(tradeNo string, req MakeOrderReq) (*models.Orde
 	case enums.TRADE_TYPE_H5:
 		p := alipay.TradePagePay{Trade: trade}
 		p.ProductCode = "FAST_INSTANT_TRADE_PAY"
+		p.QRPayMode = req.QrPayMode
+		p.QRCodeWidth = req.QRCodeWidth
 		p.ReturnURL = req.ReturnUrl
 		p.TimeoutExpress = fmt.Sprintf("%vm", math.Round(time.Until(expire).Minutes()))
 		if time.Until(expire) < time.Minute || time.Until(expire) > time.Hour*24*15 {

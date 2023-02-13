@@ -8,7 +8,7 @@ import (
 type TradeProvider uint
 
 const (
-	TRADE_PROVIDER_WECHAT = iota + 1
+	TRADE_PROVIDER_WECHAT TradeProvider = iota + 1
 	TRADE_PROVIDER_ALIPAY
 )
 
@@ -56,16 +56,16 @@ func (t *TradeProvider) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (p *TradeProvider) String() string {
-	v, ok := tradeProviderValue2StrMap[*p]
+func (p TradeProvider) String() string {
+	v, ok := tradeProviderValue2StrMap[p]
 	if ok {
 		return v.Name
 	}
 	return "unkown"
 }
 
-func (p *TradeProvider) Code() string {
-	v, ok := tradeProviderValue2StrMap[*p]
+func (p TradeProvider) Code() string {
+	v, ok := tradeProviderValue2StrMap[p]
 	if ok {
 		return v.Code
 	}

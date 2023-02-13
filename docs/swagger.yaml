@@ -186,7 +186,7 @@ paths:
   /orders/{trade_no}:
     get:
       description: query order by trade no
-      operationId: QueryWechatOrderDetail
+      operationId: QueryOrder
       parameters:
       - description: trade no
         in: path

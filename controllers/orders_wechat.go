@@ -55,7 +55,7 @@ func (w *OrderCtrl) RefreshPayUrl(c *gin.Context) {
 }
 
 // @Tags        Orders
-// @ID          QueryWechatOrderDetail
+// @ID          QueryOrder
 // @Summary     query order by trade no
 // @Description query order by trade no
 // @Produce     json

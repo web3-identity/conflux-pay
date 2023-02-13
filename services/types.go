@@ -20,8 +20,9 @@ type MakeOrderReq struct {
 	TimeExpire    int64           `json:"time_expire,omitempty" binding:"required"` // alipay 当面付无效，当面付固定过期时间为2小时
 	Amount        int64           `json:"amount" binding:"required"`
 	NotifyUrl     *string         `json:"notify_url,omitempty"`
-	QrPayMode     string          `json:"qr_mode,omitempty"`    // 只有alipay，且 trade type 为 h5 模式有效; 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22
-	ReturnUrl     string          `json:"return_url,omitempty"` // 只有alipay，且 trade type 为 h5 模式有效
+	QrPayMode     string          `json:"qr_pay_mode,omitempty"`  // 支付二维码模式。 只有alipay，且 trade type 为 h5 模式有效; 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22
+	QRCodeWidth   string          `json:"qrcode_width,omitempty"` // 二维码宽度。 只有alipay，且 trade type 为 h5 模式有效，qr pay mode 为4 时有效； 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22
+	ReturnUrl     string          `json:"return_url,omitempty"`   // 付款成功后的跳转链接。只有alipay，且 trade type 为 h5 模式有效; 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22
 }
 
 func (m *MakeOrderReq) MustGetTradeProvider() enums.TradeProvider {

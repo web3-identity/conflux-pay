@@ -209,7 +209,7 @@ const docTemplate = `{
                     "Orders"
                 ],
                 "summary": "query order by trade no",
-                "operationId": "QueryWechatOrderDetail",
+                "operationId": "QueryOrder",
                 "parameters": [
                     {
                         "type": "string",
