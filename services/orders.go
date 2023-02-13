@@ -153,6 +153,10 @@ func (w *OrderService) GetOrder(tradeNo string) (*models.Order, error) {
 	if !o.IsStable() {
 		tradeState, err := w.MustGetTrader(o.AppName, o.Provider).GetTradeState(tradeNo)
 		if err != nil {
+			// 支付宝未付款的交易都会返回不存在
+			if o.Provider == enums.TRADE_PROVIDER_ALIPAY && IsNotExistErr(err) {
+				return o, nil
+			}
 			return nil, err
 		}
 

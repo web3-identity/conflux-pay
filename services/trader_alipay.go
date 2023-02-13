@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -235,4 +236,8 @@ func convertAlRefundState(refundState string) enums.RefundState {
 
 func IsAlResSuccess(alipayCode alipay.Code) bool {
 	return alipayCode == alipay.CodeSuccess
+}
+
+func IsNotExistErr(err error) bool {
+	return strings.Contains(err.Error(), "查询的交易不存在")
 }
