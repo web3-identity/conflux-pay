@@ -1,14 +1,19 @@
 environment: development
 port: 8080
 company:
-  mchId: df
-  mchCertNo: ddd
-  mchAPIv3Key: sss
-  mchPrivateKey: ddd
+  wechat:
+    mchId: mch-id
+    mchCertNo: mch-cert-no
+    mchAPIv3Key: mch-api-v3-key
+    mchPrivateKey: mch-priv-key
+  alipay:
+    privateKey:   my-priv-key
+    alipayPublicKey: alipay-pub-key
 apps:
   cns:
-    appId: cns-appid
-    appSecret: cns-app-secret
+    appIdAlipay: appid-alipay
+    appIdWechat: appid-wechat
+    appSecretHash: cns-app-secret
     appInternalID: 1
   rainbow:
     appId: rainbow-appid
