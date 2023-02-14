@@ -1,10 +1,11 @@
 package ginutils
 
 import (
+	"fmt"
 	"net/http"
-	"runtime/debug"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	rainbow_errors "github.com/web3-identity/conflux-pay/pay_errors"
 )
 
@@ -41,7 +42,7 @@ func RenderRespOK(c *gin.Context, data interface{}, httpStatusCode ...int) {
 func RenderRespError(c *gin.Context, err error, rainbowErrorCode ...rainbow_errors.RainbowError) {
 	// logrus.WithField("error_stack", string(debug.Stack())).WithField("err", err).Info("render error")
 	c.Error(err)
-	c.Set("error_stack", string(debug.Stack()))
+	c.Set("error_stack", fmt.Sprintf("%+v", errors.WithStack(err)))
 
 	if re, ok := err.(rainbow_errors.RainbowError); ok {
 		re.RenderJSON(c)

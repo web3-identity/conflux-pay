@@ -312,11 +312,23 @@ const docTemplate = `{
                     "description": "PayNotifyNextTime    *time.Time ` + "`" + `json:\"pay_notify_next_time\"` + "`" + `",
                     "type": "integer"
                 },
+                "qr_code_width": {
+                    "description": "二维码宽度。 只有alipay，且 trade type 为 h5 模式有效，qr pay mode 为4 时有效； 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22",
+                    "type": "string"
+                },
+                "qr_pay_mode": {
+                    "description": "支付二维码模式。 只有alipay，且 trade type 为 h5 模式有效; 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22",
+                    "type": "string"
+                },
                 "refund_notify_count": {
                     "description": "RefundNotifyNextTime    *time.Time ` + "`" + `json:\"refund_notify_next_time\"` + "`" + `",
                     "type": "integer"
                 },
                 "refund_state": {
+                    "type": "string"
+                },
+                "return_url": {
+                    "description": "付款成功后的跳转链接。只有alipay，且 trade type 为 h5 模式有效; 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22",
                     "type": "string"
                 },
                 "time_expire": {
@@ -358,7 +370,19 @@ const docTemplate = `{
                 "h5_url": {
                     "type": "string"
                 },
+                "qr_code_width": {
+                    "description": "二维码宽度。 只有alipay，且 trade type 为 h5 模式有效，qr pay mode 为4 时有效； 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22",
+                    "type": "string"
+                },
+                "qr_pay_mode": {
+                    "description": "支付二维码模式。 只有alipay，且 trade type 为 h5 模式有效; 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22",
+                    "type": "string"
+                },
                 "refund_state": {
+                    "type": "string"
+                },
+                "return_url": {
+                    "description": "付款成功后的跳转链接。只有alipay，且 trade type 为 h5 模式有效; 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22",
                     "type": "string"
                 },
                 "time_expire": {
@@ -397,12 +421,12 @@ const docTemplate = `{
                 "notify_url": {
                     "type": "string"
                 },
-                "qr_pay_mode": {
-                    "description": "支付二维码模式。 只有alipay，且 trade type 为 h5 模式有效; 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22",
+                "qr_code_width": {
+                    "description": "二维码宽度。 只有alipay，且 trade type 为 h5 模式有效，qr pay mode 为4 时有效； 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22",
                     "type": "string"
                 },
-                "qrcode_width": {
-                    "description": "二维码宽度。 只有alipay，且 trade type 为 h5 模式有效，qr pay mode 为4 时有效； 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22",
+                "qr_pay_mode": {
+                    "description": "支付二维码模式。 只有alipay，且 trade type 为 h5 模式有效; 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22",
                     "type": "string"
                 },
                 "return_url": {

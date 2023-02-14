@@ -9,17 +9,20 @@ import (
 )
 
 type OrderCore struct {
-	AppName     string              `gorm:"type:varchar(32)" json:"app_name"`
-	Provider    enums.TradeProvider `gorm:"uint" json:"trade_provider" swaggertype:"string"`
-	TradeNo     string              `gorm:"type:varchar(32);uniqueIndex" json:"trade_no"`
-	TradeType   enums.TradeType     `gorm:"uint" json:"trade_type" swaggertype:"string"`
-	TradeState  enums.TradeState    `gorm:"uint" json:"trade_state" swaggertype:"string"`
-	RefundState enums.RefundState   `gorm:"uint" json:"refund_state" swaggertype:"string"`
-	Amount      uint                `gorm:"uint" json:"amount"` // 单位为分
-	Description *string             `gorm:"type:varchar(255)" json:"description"`
-	TimeExpire  *time.Time          `json:"time_expire,omitempty"`
-	CodeUrl     *string             `gorm:"type:varchar(255)" json:"code_url,omitempty"`
-	H5Url       *string             `gorm:"type:varchar(1023)" json:"h5_url,omitempty"`
+	AppName       string              `gorm:"type:varchar(32)" json:"app_name"`
+	TradeProvider enums.TradeProvider `gorm:"uint" json:"trade_provider" swaggertype:"string"`
+	TradeNo       string              `gorm:"type:varchar(32);uniqueIndex" json:"trade_no"`
+	TradeType     enums.TradeType     `gorm:"uint" json:"trade_type" swaggertype:"string"`
+	TradeState    enums.TradeState    `gorm:"uint" json:"trade_state" swaggertype:"string"`
+	RefundState   enums.RefundState   `gorm:"uint" json:"refund_state" swaggertype:"string"`
+	Amount        uint                `gorm:"uint" json:"amount"` // 单位为分
+	Description   *string             `gorm:"type:varchar(255)" json:"description"`
+	TimeExpire    *time.Time          `json:"time_expire,omitempty"`
+	QrPayMode     string              `json:"qr_pay_mode,omitempty"`   // 支付二维码模式。 只有alipay，且 trade type 为 h5 模式有效; 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22
+	QrCodeWidth   string              `json:"qr_code_width,omitempty"` // 二维码宽度。 只有alipay，且 trade type 为 h5 模式有效，qr pay mode 为4 时有效； 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22
+	ReturnUrl     string              `json:"return_url,omitempty"`    // 付款成功后的跳转链接。只有alipay，且 trade type 为 h5 模式有效; 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22
+	CodeUrl       *string             `gorm:"type:varchar(255)" json:"code_url,omitempty"`
+	H5Url         *string             `gorm:"type:varchar(1023)" json:"h5_url,omitempty"`
 }
 
 func (o *OrderCore) IsStable() bool {

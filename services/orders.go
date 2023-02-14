@@ -2,12 +2,13 @@ package services
 
 import (
 	"context"
-	"errors"
+
 	"fmt"
 	"net/http"
 	"sync"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/web3-identity/conflux-pay/config"
 	"github.com/web3-identity/conflux-pay/models"
@@ -105,36 +106,29 @@ func (w *OrderService) InvokeRefundStateChangedEvent(o *models.Order) {
 // 返回 trade_no, pay_url
 
 func (w *OrderService) MakeOrder(appName string, req MakeOrderReq) (*models.Order, error) {
+	logrus.WithField("app name", appName).WithField("req", req).Info("make order")
 	app := config.MustGetApp(appName)
 	no := genTradeNo(app.AppInternalID, req.MustGetTradeProvider())
-
-	expire := time.Unix(req.TimeExpire, 0)
-
 	orderResp, err := w.MustGetTrader(appName, req.MustGetTradeProvider()).PreCreate(no, req)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	// save db
 	order := &models.Order{
 		OrderCore: models.OrderCore{
-			AppName:     appName,
-			Provider:    req.MustGetTradeProvider(),
-			TradeNo:     no,
-			TradeType:   req.TradeType,
-			TradeState:  enums.TRADE_STATE_NOTPAY,
-			Amount:      uint(req.Amount),
-			Description: req.Description,
-			TimeExpire:  &expire,
-			CodeUrl:     orderResp.CodeUrl,
-			H5Url:       orderResp.H5Url,
-		},
-		OrderNofity: models.OrderNofity{
-			AppPayNotifyUrl: req.NotifyUrl,
+			AppName:    appName,
+			TradeNo:    no,
+			TradeState: enums.TRADE_STATE_NOTPAY,
+			CodeUrl:    orderResp.CodeUrl,
+			H5Url:      orderResp.H5Url,
 		},
 	}
+	req.FillOrder(order)
 
-	order.Save()
+	if err = order.Save(); err != nil {
+		return nil, err
+	}
 	go w.autoCloseOrder(order)
 
 	return order, nil
@@ -143,28 +137,28 @@ func (w *OrderService) MakeOrder(appName string, req MakeOrderReq) (*models.Orde
 func (w *OrderService) GetOrder(tradeNo string) (*models.Order, error) {
 	o, err := models.FindOrderByTradeNo(tradeNo)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
-	if !config.NotifyConfig[o.Provider].Enable {
+	if config.NotifyConfig[o.TradeProvider].Enable {
 		return o, nil
 	}
 
 	if !o.IsStable() {
-		tradeState, err := w.MustGetTrader(o.AppName, o.Provider).GetTradeState(tradeNo)
+		tradeState, err := w.MustGetTrader(o.AppName, o.TradeProvider).GetTradeState(tradeNo)
 		if err != nil {
 			// 支付宝未付款的交易都会返回不存在
-			if o.Provider == enums.TRADE_PROVIDER_ALIPAY && IsNotExistErr(err) {
+			if o.TradeProvider == enums.TRADE_PROVIDER_ALIPAY && IsNotExistErr(err) {
 				return o, nil
 			}
-			return nil, err
+			return nil, errors.WithStack(err)
 		}
 
 		refundState := o.RefundState
 		if tradeState == enums.TRADE_STATE_REFUND {
-			_refundState, err := w.MustGetTrader(o.AppName, o.Provider).GetRefundState(tradeNo)
+			_refundState, err := w.MustGetTrader(o.AppName, o.TradeProvider).GetRefundState(tradeNo)
 			if err != nil {
-				return nil, err
+				return nil, errors.WithStack(err)
 			}
 			refundState = _refundState
 		}
@@ -177,7 +171,7 @@ func (w *OrderService) GetOrder(tradeNo string) (*models.Order, error) {
 func (w *OrderService) getOrderCore(tradeNo string) (*models.OrderCore, error) {
 	o, err := w.GetOrder(tradeNo)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return &o.OrderCore, nil
 }
@@ -185,21 +179,16 @@ func (w *OrderService) getOrderCore(tradeNo string) (*models.OrderCore, error) {
 func (w *OrderService) RefreshUrl(tradeNo string) (*MakeOrderResp, error) {
 	o, err := models.FindOrderByTradeNo(tradeNo)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	// return error if order is complete
 	if o.TradeState.IsStable() {
 		return nil, cns_errors.ERR_ORDER_COMPLETED
 	}
 
-	resp, err := w.MustGetTrader(o.AppName, o.Provider).PreCreate(tradeNo, MakeOrderReq{
-		TradeType:   o.TradeType,
-		Description: o.Description,
-		TimeExpire:  o.TimeExpire.Unix(),
-		Amount:      int64(o.Amount),
-	})
+	resp, err := w.MustGetTrader(o.AppName, o.TradeProvider).PreCreate(tradeNo, *NewMakeOrderReqFromOrder(o))
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	o.CodeUrl = resp.CodeUrl
@@ -211,10 +200,10 @@ func (w *OrderService) RefreshUrl(tradeNo string) (*MakeOrderResp, error) {
 func (w *OrderService) Refund(tradeNo string, req RefundReq) (*models.OrderCore, error) {
 	o, err := models.FindOrderByTradeNo(tradeNo)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
-	if err = w.MustGetTrader(o.AppName, o.Provider).Refund(o.TradeNo, req); err != nil {
-		return nil, err
+	if err = w.MustGetTrader(o.AppName, o.TradeProvider).Refund(o.TradeNo, req); err != nil {
+		return nil, errors.WithStack(err)
 	}
 	return w.getOrderCore(tradeNo)
 }
@@ -222,10 +211,10 @@ func (w *OrderService) Refund(tradeNo string, req RefundReq) (*models.OrderCore,
 func (w *OrderService) Close(tradeNo string) (*models.OrderCore, error) {
 	o, err := models.FindOrderByTradeNo(tradeNo)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
-	if err = w.MustGetTrader(o.AppName, o.Provider).Close(o.TradeNo); err != nil {
-		return nil, err
+	if err = w.MustGetTrader(o.AppName, o.TradeProvider).Close(o.TradeNo); err != nil {
+		return nil, errors.WithStack(err)
 	}
 	return w.getOrderCore(tradeNo)
 }
@@ -445,7 +434,7 @@ func (w *OrderService) Close(tradeNo string) (*models.OrderCore, error) {
 func (w *OrderService) autoCloseOrder(order *models.Order) {
 	timer := time.NewTimer(time.Until(*order.TimeExpire))
 	<-timer.C
-	if err := w.MustGetTrader(order.AppName, order.Provider).Close(order.TradeNo); err != nil {
+	if err := w.MustGetTrader(order.AppName, order.TradeProvider).Close(order.TradeNo); err != nil {
 		logrus.WithError(err).WithField("order id", order).Error("failed to close order")
 		return
 	}

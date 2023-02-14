@@ -145,7 +145,7 @@ func (w *WechatTrader) Refund(tradeNo string, req RefundReq) error {
 				Refund:   core.Int64(int64(order.Amount)),
 				Total:    core.Int64(int64(order.Amount)),
 			},
-			NotifyUrl: config.GetRefundNotifyUrl(order.Provider, tradeNo),
+			NotifyUrl: config.GetRefundNotifyUrl(order.TradeProvider, tradeNo),
 		},
 	)
 	if err != nil {

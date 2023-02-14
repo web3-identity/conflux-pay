@@ -109,7 +109,7 @@ func (a *AlipayTrader) PreCreate(tradeNo string, req MakeOrderReq) (*models.Orde
 		p := alipay.TradePagePay{Trade: trade}
 		p.ProductCode = "FAST_INSTANT_TRADE_PAY"
 		p.QRPayMode = req.QrPayMode
-		p.QRCodeWidth = req.QRCodeWidth
+		p.QRCodeWidth = req.QrCodeWidth
 		p.ReturnURL = req.ReturnUrl
 		p.TimeoutExpress = fmt.Sprintf("%vm", math.Round(time.Until(expire).Minutes()))
 		if time.Until(expire) < time.Minute || time.Until(expire) > time.Hour*24*15 {
@@ -241,5 +241,5 @@ func IsAlResSuccess(alipayCode alipay.Code) bool {
 }
 
 func IsNotExistErr(err error) bool {
-	return strings.Contains(err.Error(), "查询的交易不存在")
+	return strings.Contains(err.Error(), "交易不存在")
 }

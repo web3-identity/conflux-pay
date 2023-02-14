@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/web3-identity/conflux-pay/models"
 	"github.com/web3-identity/conflux-pay/models/enums"
@@ -20,9 +21,36 @@ type MakeOrderReq struct {
 	TimeExpire    int64           `json:"time_expire,omitempty" binding:"required"` // alipay 当面付无效，当面付固定过期时间为2小时
 	Amount        int64           `json:"amount" binding:"required"`
 	NotifyUrl     *string         `json:"notify_url,omitempty"`
-	QrPayMode     string          `json:"qr_pay_mode,omitempty"`  // 支付二维码模式。 只有alipay，且 trade type 为 h5 模式有效; 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22
-	QRCodeWidth   string          `json:"qrcode_width,omitempty"` // 二维码宽度。 只有alipay，且 trade type 为 h5 模式有效，qr pay mode 为4 时有效； 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22
-	ReturnUrl     string          `json:"return_url,omitempty"`   // 付款成功后的跳转链接。只有alipay，且 trade type 为 h5 模式有效; 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22
+	QrPayMode     string          `json:"qr_pay_mode,omitempty"`   // 支付二维码模式。 只有alipay，且 trade type 为 h5 模式有效; 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22
+	QrCodeWidth   string          `json:"qr_code_width,omitempty"` // 二维码宽度。 只有alipay，且 trade type 为 h5 模式有效，qr pay mode 为4 时有效； 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22
+	ReturnUrl     string          `json:"return_url,omitempty"`    // 付款成功后的跳转链接。只有alipay，且 trade type 为 h5 模式有效; 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22
+}
+
+func NewMakeOrderReqFromOrder(o *models.Order) *MakeOrderReq {
+	return &MakeOrderReq{
+		TradeProvider: o.TradeProvider.String(),
+		TradeType:     o.TradeType,
+		Description:   o.Description,
+		TimeExpire:    o.TimeExpire.Unix(),
+		Amount:        int64(o.Amount),
+		NotifyUrl:     o.AppPayNotifyUrl,
+		QrPayMode:     o.QrPayMode,
+		QrCodeWidth:   o.QrCodeWidth,
+		ReturnUrl:     o.ReturnUrl,
+	}
+}
+
+func (req *MakeOrderReq) FillOrder(o *models.Order) {
+	expire := time.Unix(req.TimeExpire, 0)
+	o.TradeProvider = req.MustGetTradeProvider()
+	o.TradeType = req.TradeType
+	o.Description = req.Description
+	o.TimeExpire = &expire
+	o.Amount = uint(req.Amount)
+	o.AppPayNotifyUrl = req.NotifyUrl
+	o.QrPayMode = req.QrPayMode
+	o.QrCodeWidth = req.QrCodeWidth
+	o.ReturnUrl = req.ReturnUrl
 }
 
 func (m *MakeOrderReq) MustGetTradeProvider() enums.TradeProvider {
@@ -43,7 +71,7 @@ type MakeOrderResp struct {
 
 func NewMakeOrderRespFromRaw(raw *models.Order) *MakeOrderResp {
 	return &MakeOrderResp{
-		TradeProvider: raw.Provider,
+		TradeProvider: raw.TradeProvider,
 		TradeType:     raw.TradeType,
 		TradeNo:       raw.TradeNo,
 		CodeUrl:       raw.CodeUrl,
