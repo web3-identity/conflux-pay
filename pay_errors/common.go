@@ -29,6 +29,7 @@ func init() {
 	rainbowErrorInfos[ERR_INVALID_TOKEN_ID] = RainbowErrorInfo{"Invalid token ID", http.StatusBadRequest}
 	rainbowErrorInfos[ERR_INVALID_CONTRACT_TYPE_UNMATCH] = RainbowErrorInfo{"Contract type and contract address not match", http.StatusBadRequest}
 	rainbowErrorInfos[ERR_INVALID_PAGINATION] = RainbowErrorInfo{"Invalid page or limit", http.StatusBadRequest}
+	rainbowErrorInfos[ERR_INVALID_PROVIDER] = RainbowErrorInfo{"Invalid provider", http.StatusBadRequest}
 
 	// CONFLICT ERRORS
 	rainbowErrorInfos[ERR_CONFLICT_COMMON] = RainbowErrorInfo{"Conflict", http.StatusConflict}
@@ -90,6 +91,7 @@ const (
 	ERR_INVALID_TOKEN_ID
 	ERR_INVALID_CONTRACT_TYPE_UNMATCH
 	ERR_INVALID_PAGINATION
+	ERR_INVALID_PROVIDER
 )
 
 // RESOURCE CONFLICT ERRORS

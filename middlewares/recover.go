@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"bytes"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -13,6 +14,7 @@ func Recovery() gin.HandlerFunc {
 	var buf bytes.Buffer
 	return gin.CustomRecoveryWithWriter(&buf, gin.RecoveryFunc(func(c *gin.Context, err interface{}) {
 		defer func() {
+			fmt.Println(buf.String())
 			logrus.WithField("recovered", buf.String()).Error("panic and recovery")
 			buf.Reset()
 		}()

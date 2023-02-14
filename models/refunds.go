@@ -7,6 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
+type Refund struct {
+	BaseModel
+	TradeNo string  `gorm:"type:varchar(32);uniqueIndex" json:"out_trade_no"`
+	Status  *string `gorm:"type:varchar(32)" json:"status"`
+}
+
 type WechatRefundDetail struct {
 	BaseModel
 	RefundId *string `gorm:"type:varchar(32)" json:"refund_id"`

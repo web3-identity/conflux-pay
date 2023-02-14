@@ -8,7 +8,11 @@ import (
 type TradeType uint
 
 const (
-	TRADE_TYPE_NATIVE = iota + 1
+	// 对应微信 NATIVE;
+	// 对应支付宝 当面付
+	TRADE_TYPE_NATIVE TradeType = iota + 1
+	// 对应微信 H5;
+	// 支付宝 电脑网站支付 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22
 	TRADE_TYPE_H5
 )
 
@@ -52,8 +56,8 @@ func (t *TradeType) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (t *TradeType) String() string {
-	v, ok := tradeTypeValue2StrMap[*t]
+func (t TradeType) String() string {
+	v, ok := tradeTypeValue2StrMap[t]
 	if ok {
 		return v
 	}

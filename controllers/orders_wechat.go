@@ -7,13 +7,13 @@ import (
 	"github.com/web3-identity/conflux-pay/utils/ginutils"
 )
 
-type WechatOrderCtrl struct {
-	service services.WechatOrderService
+type OrderCtrl struct {
+	service services.OrderService
 }
 
-func NewWechatOrderCtrl() *WechatOrderCtrl {
-	return &WechatOrderCtrl{
-		service: *services.NewWechatOrderService(),
+func NewOrderCtrl() *OrderCtrl {
+	return &OrderCtrl{
+		service: *services.NewOrderService(),
 	}
 }
 
@@ -26,8 +26,8 @@ func NewWechatOrderCtrl() *WechatOrderCtrl {
 // @Success     200          {object} models.Order
 // @Failure     400          {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
 // @Failure     500          {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
-// @Router      /orders/wechat [post]
-func (w *WechatOrderCtrl) MakeOrder(c *gin.Context) {
+// @Router      /orders [post]
+func (w *OrderCtrl) MakeOrder(c *gin.Context) {
 	req := services.MakeOrderReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		ginutils.RenderRespError(c, err, cns_errors.ERR_INVALID_REQUEST_COMMON)
@@ -43,30 +43,30 @@ func (w *WechatOrderCtrl) MakeOrder(c *gin.Context) {
 // @Summary     refresh pay url
 // @Description refresh pay url
 // @Produce     json
-// @Param       trade_no   path     string                            true "trade no"
+// @Param       trade_no path     string true "trade no"
 // @Success     200      {object} services.MakeOrderResp
-// @Failure     400        {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
-// @Failure     500        {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
-// @Router      /orders/wechat/refresh-url/{trade_no} [put]
-func (w *WechatOrderCtrl) RefreshPayUrl(c *gin.Context) {
+// @Failure     400      {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
+// @Failure     500      {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
+// @Router      /orders/refresh-url/{trade_no} [put]
+func (w *OrderCtrl) RefreshPayUrl(c *gin.Context) {
 	trandeNo := c.Param("trade_no")
 	o, err := w.service.RefreshUrl(trandeNo)
 	ginutils.RenderResp(c, o, err)
 }
 
 // @Tags        Orders
-// @ID          QueryWechatOrderDetail
+// @ID          QueryOrder
 // @Summary     query order by trade no
 // @Description query order by trade no
 // @Produce     json
-// @Param       trade_no path     string true "trade no"
-// @Success     200      {object} models.WechatOrderDetail
+// @Param       trade_no path     string                            true "trade no"
+// @Success     200      {object} models.Order                      "order"
 // @Failure     400      {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
 // @Failure     500      {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
-// @Router      /orders/wechat/{trade_no} [get]
-func (w *WechatOrderCtrl) GetOrder(c *gin.Context) {
+// @Router      /orders/{trade_no} [get]
+func (w *OrderCtrl) GetOrder(c *gin.Context) {
 	trandeNo := c.Param("trade_no")
-	o, err := w.service.GetOrderDetail(trandeNo)
+	o, err := w.service.GetOrder(trandeNo)
 	ginutils.RenderResp(c, o, err)
 }
 
@@ -75,13 +75,13 @@ func (w *WechatOrderCtrl) GetOrder(c *gin.Context) {
 // @Summary     refund pay
 // @Description refund pay
 // @Produce     json
-// @Param       trade_no path     string true "trade no"
+// @Param       trade_no   path     string                            true "trade no"
 // @Param       refund_req body     services.RefundReq                true "refund_req"
-// @Success     200        {object} models.WechatRefundDetail         "refund_detail"
-// @Failure     400      {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
-// @Failure     500      {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
-// @Router      /orders/wechat/refund/{trade_no} [put]
-func (w *WechatOrderCtrl) Refund(c *gin.Context) {
+// @Success     200        {object} models.OrderCore                  "order"
+// @Failure     400        {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
+// @Failure     500        {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
+// @Router      /orders/refund/{trade_no} [put]
+func (w *OrderCtrl) Refund(c *gin.Context) {
 	trandeNo := c.Param("trade_no")
 	req := services.RefundReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -97,24 +97,24 @@ func (w *WechatOrderCtrl) Refund(c *gin.Context) {
 // @Summary     close order
 // @Description close order
 // @Produce     json
-// @Param       trade_no path     string true "trade no"
-// @Success     200      {object} models.WechatOrderDetail
+// @Param       trade_no path     string                            true "trade no"
+// @Success     200      {object} models.OrderCore                  "order"
 // @Failure     400      {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
 // @Failure     500      {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
-// @Router      /orders/wechat/close/{trade_no} [put]
-func (w *WechatOrderCtrl) Close(c *gin.Context) {
+// @Router      /orders/close/{trade_no} [put]
+func (w *OrderCtrl) Close(c *gin.Context) {
 	trandeNo := c.Param("trade_no")
 	o, err := w.service.Close(trandeNo)
 	ginutils.RenderResp(c, o, err)
 }
 
-func (w *WechatOrderCtrl) ReceivePayNotify(c *gin.Context) {
+func (w *OrderCtrl) ReceivePayNotify(c *gin.Context) {
 	trandeNo := c.Param("trade_no")
 	err := w.service.PayNotifyHandler(trandeNo, c.Request)
 	ginutils.RenderResp(c, nil, err)
 }
 
-func (w *WechatOrderCtrl) ReceiveRefundNotify(c *gin.Context) {
+func (w *OrderCtrl) ReceiveRefundNotify(c *gin.Context) {
 	trandeNo := c.Param("trade_no")
 	err := w.service.RefundNotifyHandler(trandeNo, c.Request)
 	ginutils.RenderResp(c, nil, err)

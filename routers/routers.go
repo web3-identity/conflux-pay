@@ -15,27 +15,24 @@ func SetupRoutes(router *gin.Engine) {
 	{
 		order := api.Group("orders")
 		{
-			order.GET("summary/:trade_no", controllers.GetOrderSummary) //provider maybe wechat/alipay
-			wechat := order.Group("wechat")
-			{
-				ctrl := controllers.NewWechatOrderCtrl()
-				wechat.POST("", ctrl.MakeOrder)
-				wechat.POST("/", ctrl.MakeOrder)
-				wechat.PUT("/refresh-url/:trade_no", ctrl.RefreshPayUrl)
-				wechat.PUT("/refund/:trade_no", ctrl.Refund)
-				wechat.PUT("/close/:trade_no", ctrl.Close)
-				wechat.GET("/:trade_no", ctrl.GetOrder)
+			// trader := order.Group(":provider")
+			ctrl := controllers.NewOrderCtrl()
+			order.POST("", ctrl.MakeOrder)
+			order.GET("/:trade_no", ctrl.GetOrder) //provider maybe trader/alipay
+			order.PUT("/refresh-url/:trade_no", ctrl.RefreshPayUrl)
+			order.PUT("/refund/:trade_no", ctrl.Refund)
+			order.PUT("/close/:trade_no", ctrl.Close)
 
-				wechat.POST("/notify-pay/:trade_no", ctrl.ReceivePayNotify)
-				wechat.POST("/notify-refund/:trade_no", ctrl.ReceiveRefundNotify)
-			}
-			alipay := order.Group("alipay")
-			{
-				ctrl := controllers.AlipayOrderCtrl{}
-				alipay.POST("", ctrl.MakeOrder)
-				alipay.POST("/", ctrl.MakeOrder)
-				alipay.GET("/:trade_no", ctrl.GetOrder)
-			}
+			order.POST("/notify-pay/:trade_no", ctrl.ReceivePayNotify)
+			order.POST("/notify-refund/:trade_no", ctrl.ReceiveRefundNotify)
+
+			// alipay := order.Group("alipay")
+			// {
+			// 	ctrl := controllers.AlipayOrderCtrl{}
+			// 	alipay.POST("", ctrl.MakeOrder)
+			// 	alipay.POST("/", ctrl.MakeOrder)
+			// 	alipay.GET("/:trade_no", ctrl.GetOrder)
+			// }
 		}
 
 	}

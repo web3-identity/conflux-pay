@@ -68,6 +68,10 @@ func Logger() gin.HandlerFunc {
 			entry = entry.
 				WithField("errors", param.ErrorMessage).
 				WithField("stack", c.GetString("error_stack"))
+
+			if c.GetString("error_stack") != "" {
+				fmt.Printf("Request error %v\n%v\n", param.ErrorMessage, c.GetString("error_stack"))
+			}
 		}
 		entry.Info("Request")
 	}
