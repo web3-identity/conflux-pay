@@ -406,6 +406,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "amount",
+                "app_name",
                 "description",
                 "time_expire",
                 "trade_provider",
@@ -414,6 +415,9 @@ const docTemplate = `{
             "properties": {
                 "amount": {
                     "type": "integer"
+                },
+                "app_name": {
+                    "type": "string"
                 },
                 "description": {
                     "type": "string"
