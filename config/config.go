@@ -101,7 +101,7 @@ func MustGetApp(appName string) App {
 
 func GetPayNotifyUrl(provider enums.TradeProvider, tradeNo string) *string {
 	if !NotifyConfig[provider].Enable {
-		return nil
+		getDefaultNotifyUrl(provider)
 	}
 	v := fmt.Sprintf("%v%v%v", NotifyConfig[provider].PayNotifyUrlBase, "/v0/orders/wechat/notify-pay/", tradeNo)
 	return &v
@@ -109,8 +109,16 @@ func GetPayNotifyUrl(provider enums.TradeProvider, tradeNo string) *string {
 
 func GetRefundNotifyUrl(provider enums.TradeProvider, tradeNo string) *string {
 	if !NotifyConfig[provider].Enable {
-		return nil
+		getDefaultNotifyUrl(provider)
 	}
 	v := fmt.Sprintf("%v%v%v", NotifyConfig[provider].RefundNotifyUrlBase, "/v0/orders/wechat/notify-refund/", tradeNo)
 	return &v
+}
+
+func getDefaultNotifyUrl(provider enums.TradeProvider) *string {
+	invalid := "https://a.com"
+	if provider == enums.TRADE_PROVIDER_WECHAT {
+		return &invalid
+	}
+	return nil
 }
