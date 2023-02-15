@@ -34,7 +34,7 @@ func (w *OrderCtrl) MakeOrder(c *gin.Context) {
 		return
 	}
 	// TODO: 身份认证 APIKEY -> App
-	resp, err := w.service.MakeOrder("cns", req)
+	resp, err := w.service.MakeOrder(req)
 	ginutils.RenderResp(c, resp, err)
 }
 

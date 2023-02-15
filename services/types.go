@@ -15,6 +15,7 @@ type TradeStateChangeHandler func(o *models.Order)
 type RefundStateChangeHandler func(o *models.Order)
 
 type MakeOrderReq struct {
+	AppName       string          `json:"app_name" binding:"required"`
 	TradeProvider string          `json:"trade_provider" swaggertype:"string" binding:"required,oneof=wechat alipay"`
 	TradeType     enums.TradeType `json:"trade_type" binding:"required" swaggertype:"string"`
 	Description   *string         `json:"description" binding:"required"`

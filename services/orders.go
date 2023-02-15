@@ -105,7 +105,8 @@ func (w *OrderService) InvokeRefundStateChangedEvent(o *models.Order) {
 // 生成 trade_no
 // 返回 trade_no, pay_url
 
-func (w *OrderService) MakeOrder(appName string, req MakeOrderReq) (*models.Order, error) {
+func (w *OrderService) MakeOrder(req MakeOrderReq) (*models.Order, error) {
+	appName := req.AppName
 	logrus.WithField("app name", appName).WithField("req", req).Info("make order")
 	app := config.MustGetApp(appName)
 	no := genTradeNo(app.AppInternalID, req.MustGetTradeProvider())
