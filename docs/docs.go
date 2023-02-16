@@ -130,7 +130,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/services.MakeOrderResp"
+                            "$ref": "#/definitions/services.MakeOrderReq"
                         }
                     },
                     "400": {
@@ -451,29 +451,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "trade_type": {
-                    "type": "string"
-                }
-            }
-        },
-        "services.MakeOrderResp": {
-            "type": "object",
-            "properties": {
-                "code_url": {
-                    "type": "string"
-                },
-                "h5_url": {
-                    "type": "string"
-                },
-                "trade_no": {
-                    "type": "string"
-                },
-                "trade_provider": {
-                    "type": "string"
-                },
-                "trade_type": {
-                    "type": "string"
-                },
-                "wap_url": {
                     "type": "string"
                 }
             }
