@@ -41,7 +41,7 @@ func NewMakeOrderReqFromOrder(o *models.Order) *MakeOrderReq {
 	}
 }
 
-func (req *MakeOrderReq) FillOrder(o *models.Order) {
+func (req *MakeOrderReq) FillToOrder(o *models.Order) {
 	expire := time.Unix(req.TimeExpire, 0)
 	o.TradeProvider = req.MustGetTradeProvider()
 	o.TradeType = req.TradeType

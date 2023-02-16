@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -65,6 +66,8 @@ func (w *WechatTrader) PreCreate(tradeNo string, req MakeOrderReq) (*models.Orde
 			return nil, err
 		}
 		orderCore.H5Url = resp.H5Url
+	case enums.TRADE_TYPE_WAP:
+		return nil, errors.New("unsupport wap pay")
 	default:
 		return nil, enums.ErrUnkownTradeType
 	}

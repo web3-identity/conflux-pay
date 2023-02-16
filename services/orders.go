@@ -123,9 +123,10 @@ func (w *OrderService) MakeOrder(req MakeOrderReq) (*models.Order, error) {
 			TradeState: enums.TRADE_STATE_NOTPAY,
 			CodeUrl:    orderResp.CodeUrl,
 			H5Url:      orderResp.H5Url,
+			WapUrl:     orderResp.WapUrl,
 		},
 	}
-	req.FillOrder(order)
+	req.FillToOrder(order)
 
 	if err = order.Save(); err != nil {
 		return nil, err

@@ -23,6 +23,7 @@ type OrderCore struct {
 	ReturnUrl     string              `json:"return_url,omitempty"`    // 付款成功后的跳转链接。只有alipay，且 trade type 为 h5 模式有效; 用法参考 https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay?scene=22
 	CodeUrl       *string             `gorm:"type:varchar(255)" json:"code_url,omitempty"`
 	H5Url         *string             `gorm:"type:varchar(1023)" json:"h5_url,omitempty"`
+	WapUrl        *string             `gorm:"type:varchar(1023)" json:"wap_url,omitempty"`
 }
 
 func (o *OrderCore) IsStable() bool {
