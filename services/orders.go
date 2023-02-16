@@ -109,8 +109,8 @@ func (w *OrderService) MakeOrder(req MakeOrderReq) (*models.Order, error) {
 	appName := req.AppName
 	logrus.WithField("app name", appName).WithField("req", req).Info("make order")
 	app := config.MustGetApp(appName)
-	no := genTradeNo(app.AppInternalID, req.MustGetTradeProvider())
-	orderResp, err := w.MustGetTrader(appName, req.MustGetTradeProvider()).PreCreate(no, req)
+	no := genTradeNo(app.AppInternalID, req.TradeProvider)
+	orderResp, err := w.MustGetTrader(appName, req.TradeProvider).PreCreate(no, req)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

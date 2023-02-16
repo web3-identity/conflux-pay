@@ -43,7 +43,7 @@ func (w *WechatTrader) PreCreate(tradeNo string, req MakeOrderReq) (*models.Orde
 		OutTradeNo:  &tradeNo,
 		TimeExpire:  &expire,
 		Amount:      &native.Amount{Total: &req.Amount},
-		NotifyUrl:   config.GetPayNotifyUrl(req.MustGetTradeProvider(), tradeNo),
+		NotifyUrl:   config.GetPayNotifyUrl(req.TradeProvider, tradeNo),
 	}
 
 	orderCore := &models.OrderCore{
