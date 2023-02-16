@@ -348,6 +348,9 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
+                },
+                "wap_url": {
+                    "type": "string"
                 }
             }
         },
@@ -399,6 +402,9 @@ const docTemplate = `{
                 },
                 "trade_type": {
                     "type": "string"
+                },
+                "wap_url": {
+                    "type": "string"
                 }
             }
         },
@@ -442,11 +448,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "trade_provider": {
-                    "type": "string",
-                    "enum": [
-                        "wechat",
-                        "alipay"
-                    ]
+                    "type": "string"
                 },
                 "trade_type": {
                     "type": "string"
@@ -469,6 +471,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "trade_type": {
+                    "type": "string"
+                },
+                "wap_url": {
                     "type": "string"
                 }
             }

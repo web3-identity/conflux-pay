@@ -178,7 +178,7 @@ func (w *OrderService) getOrderCore(tradeNo string) (*models.OrderCore, error) {
 	return &o.OrderCore, nil
 }
 
-func (w *OrderService) RefreshUrl(tradeNo string) (*MakeOrderResp, error) {
+func (w *OrderService) RefreshUrl(tradeNo string) (*models.Order, error) {
 	o, err := models.FindOrderByTradeNo(tradeNo)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -196,7 +196,7 @@ func (w *OrderService) RefreshUrl(tradeNo string) (*MakeOrderResp, error) {
 	o.CodeUrl = resp.CodeUrl
 	o.H5Url = resp.H5Url
 	o.Save()
-	return NewMakeOrderRespFromRaw(o), nil
+	return o, nil
 }
 
 func (w *OrderService) Refund(tradeNo string, req RefundReq) (*models.OrderCore, error) {

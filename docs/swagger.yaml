@@ -74,6 +74,8 @@ definitions:
         type: string
       updated_at:
         type: string
+      wap_url:
+        type: string
     type: object
   models.OrderCore:
     properties:
@@ -110,6 +112,8 @@ definitions:
         type: string
       trade_type:
         type: string
+      wap_url:
+        type: string
     type: object
   services.MakeOrderReq:
     properties:
@@ -135,9 +139,6 @@ definitions:
         description: alipay 当面付无效，当面付固定过期时间为2小时
         type: integer
       trade_provider:
-        enum:
-        - wechat
-        - alipay
         type: string
       trade_type:
         type: string
@@ -160,6 +161,8 @@ definitions:
       trade_provider:
         type: string
       trade_type:
+        type: string
+      wap_url:
         type: string
     type: object
   services.RefundReq:

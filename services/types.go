@@ -54,24 +54,6 @@ func (req *MakeOrderReq) FillToOrder(o *models.Order) {
 	o.ReturnUrl = req.ReturnUrl
 }
 
-type MakeOrderResp struct {
-	TradeProvider enums.TradeProvider `json:"trade_provider" swaggertype:"string"`
-	TradeType     enums.TradeType     `json:"trade_type" swaggertype:"string"`
-	TradeNo       string              `json:"trade_no"`
-	CodeUrl       *string             `json:"code_url,omitempty"`
-	H5Url         *string             `json:"h5_url,omitempty"`
-}
-
-func NewMakeOrderRespFromRaw(raw *models.Order) *MakeOrderResp {
-	return &MakeOrderResp{
-		TradeProvider: raw.TradeProvider,
-		TradeType:     raw.TradeType,
-		TradeNo:       raw.TradeNo,
-		CodeUrl:       raw.CodeUrl,
-		H5Url:         raw.H5Url,
-	}
-}
-
 type RefundReq struct {
 	Reason    string  `json:"reason" binding:"required"`
 	NotifyUrl *string `json:"notify_url"`

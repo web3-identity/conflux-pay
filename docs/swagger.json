@@ -345,6 +345,9 @@
                 },
                 "updated_at": {
                     "type": "string"
+                },
+                "wap_url": {
+                    "type": "string"
                 }
             }
         },
@@ -396,6 +399,9 @@
                 },
                 "trade_type": {
                     "type": "string"
+                },
+                "wap_url": {
+                    "type": "string"
                 }
             }
         },
@@ -439,11 +445,7 @@
                     "type": "integer"
                 },
                 "trade_provider": {
-                    "type": "string",
-                    "enum": [
-                        "wechat",
-                        "alipay"
-                    ]
+                    "type": "string"
                 },
                 "trade_type": {
                     "type": "string"
@@ -466,6 +468,9 @@
                     "type": "string"
                 },
                 "trade_type": {
+                    "type": "string"
+                },
+                "wap_url": {
                     "type": "string"
                 }
             }
