@@ -44,7 +44,7 @@ func (w *OrderCtrl) MakeOrder(c *gin.Context) {
 // @Description refresh pay url
 // @Produce     json
 // @Param       trade_no path     string true "trade no"
-// @Success     200      {object} services.MakeOrderReq
+// @Success     200      {object} models.Order
 // @Failure     400      {object} cns_errors.RainbowErrorDetailInfo "Invalid request"
 // @Failure     500      {object} cns_errors.RainbowErrorDetailInfo "Internal Server error"
 // @Router      /orders/refresh-url/{trade_no} [put]
