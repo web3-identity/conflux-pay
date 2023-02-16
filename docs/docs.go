@@ -130,7 +130,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/services.MakeOrderReq"
+                            "$ref": "#/definitions/models.Order"
                         }
                     },
                     "400": {

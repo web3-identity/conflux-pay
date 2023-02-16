@@ -270,7 +270,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/services.MakeOrderReq'
+            $ref: '#/definitions/models.Order'
         "400":
           description: Invalid request
           schema:
