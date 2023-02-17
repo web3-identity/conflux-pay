@@ -2,6 +2,7 @@ package models
 
 import "github.com/wechatpay-apiv3/wechatpay-go/services/payments"
 
+// unuse
 type WechatOrderDetail struct {
 	BaseModel
 	Amount         uint    `gorm:"type:varchar(32);" json:"amount,omitempty"`

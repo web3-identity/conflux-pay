@@ -150,7 +150,7 @@ func (w *OrderService) GetOrder(tradeNo string) (*models.Order, error) {
 		tradeState, err := w.MustGetTrader(o.AppName, o.TradeProvider).GetTradeState(tradeNo)
 		if err != nil {
 			// 支付宝未付款的交易都会返回不存在
-			if o.TradeProvider == enums.TRADE_PROVIDER_ALIPAY && IsNotExistErr(err) {
+			if o.TradeProvider == enums.TRADE_PROVIDER_ALIPAY && IsAlNotExistErr(err) {
 				return o, nil
 			}
 			return nil, errors.WithStack(err)
@@ -216,6 +216,10 @@ func (w *OrderService) Close(tradeNo string) (*models.OrderCore, error) {
 		return nil, errors.WithStack(err)
 	}
 	if err = w.MustGetTrader(o.AppName, o.TradeProvider).Close(o.TradeNo); err != nil {
+		if IsAlNotExistErr(err) && o.TimeExpire.Before(time.Now()) {
+			o.UpdateStates(enums.TRADE_STATE_CLOSED, enums.REFUND_STATE_NIL)
+			return w.getOrderCore(tradeNo)
+		}
 		return nil, errors.WithStack(err)
 	}
 	return w.getOrderCore(tradeNo)
@@ -436,7 +440,11 @@ func (w *OrderService) Close(tradeNo string) (*models.OrderCore, error) {
 func (w *OrderService) autoCloseOrder(order *models.Order) {
 	timer := time.NewTimer(time.Until(*order.TimeExpire))
 	<-timer.C
-	if err := w.MustGetTrader(order.AppName, order.TradeProvider).Close(order.TradeNo); err != nil {
+	// if err := w.MustGetTrader(order.AppName, order.TradeProvider).Close(order.TradeNo); err != nil {
+	// 	logrus.WithError(err).WithField("order id", order).Error("failed to close order")
+	// 	return
+	// }
+	if _, err := w.Close(order.TradeNo); err != nil {
 		logrus.WithError(err).WithField("order id", order).Error("failed to close order")
 		return
 	}

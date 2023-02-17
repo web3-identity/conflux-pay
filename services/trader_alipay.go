@@ -225,6 +225,6 @@ func IsAlResSuccess(alipayCode alipay.Code) bool {
 	return alipayCode == alipay.CodeSuccess
 }
 
-func IsNotExistErr(err error) bool {
+func IsAlNotExistErr(err error) bool {
 	return strings.Contains(err.Error(), "交易不存在")
 }

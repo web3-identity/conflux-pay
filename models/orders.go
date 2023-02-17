@@ -82,3 +82,13 @@ func FindNeedNotifyOrders(startId uint) ([]*Order, error) {
 	}
 	return orders, nil
 }
+
+func FindNeedCloseOrders() ([]*Order, error) {
+	var orders []*Order
+	if err := GetDB().Debug().
+		Where("time_expire < ? and trade_state in ? and trim(app_name)!=''", time.Now(), enums.GetUnpayTradeStates()).
+		Find(&orders).Error; err != nil {
+		return nil, err
+	}
+	return orders, nil
+}

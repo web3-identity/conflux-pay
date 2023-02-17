@@ -12,7 +12,7 @@ type RefundState uint
 // PROCESSING ： 退款处理中
 // ABNORMAL ：退款异常
 const (
-	REFUND_STATE_NIL = iota
+	REFUND_STATE_NIL RefundState = iota
 	REFUND_STATE_SUCCESSS
 	REFUND_STATE_CLOSED
 	REFUND_STATE_PROCESSING

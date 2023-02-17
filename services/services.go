@@ -40,7 +40,7 @@ func Init() {
 }
 
 func StartTasks() {
-	InitCloseOrderTask()
+	go InitCloseOrderTask()
 	go RunNotifyTask()
 }
 
