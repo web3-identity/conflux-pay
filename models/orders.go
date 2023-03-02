@@ -26,6 +26,7 @@ type OrderCore struct {
 	WapUrl        *string             `gorm:"type:varchar(1023)" json:"wap_url,omitempty"`
 }
 
+// 付款交易和退款交易都完成
 func (o *OrderCore) IsStable() bool {
 	return o.TradeState.IsStable() && o.RefundState.IsStable(o.TradeState)
 }
@@ -65,6 +66,24 @@ func (o *Order) UpdateStates(tradeState enums.TradeState, refundState enums.Refu
 	o.RefundState = refundState
 
 	GetDB().Save(o)
+}
+
+func (o *Order) UpdateTradeState(tradeState enums.TradeState) error {
+	if tradeState == o.TradeState {
+		return nil
+	}
+
+	o.TradeState = tradeState
+	return GetDB().Save(o).Error
+}
+
+func (o *Order) UpdateRefundState(refundState enums.RefundState) error {
+	if refundState == o.RefundState {
+		return nil
+	}
+
+	o.RefundState = refundState
+	return GetDB().Save(o).Error
 }
 
 func FindOrderByTradeNo(tradeNo string) (*Order, error) {

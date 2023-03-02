@@ -3,3 +3,4 @@ config.yaml
 .vscode/*
 .DS_Store
 config_prod.yaml
+config_dev.yaml

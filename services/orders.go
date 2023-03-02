@@ -146,7 +146,11 @@ func (w *OrderService) GetOrder(tradeNo string) (*models.Order, error) {
 		return o, nil
 	}
 
-	if !o.IsStable() {
+	if o.IsStable() {
+		return o, nil
+	}
+
+	if !o.TradeState.IsStable() {
 		tradeState, err := w.MustGetTrader(o.AppName, o.TradeProvider).GetTradeState(tradeNo)
 		if err != nil {
 			// 支付宝未付款的交易都会返回不存在
@@ -155,19 +159,27 @@ func (w *OrderService) GetOrder(tradeNo string) (*models.Order, error) {
 			}
 			return nil, errors.WithStack(err)
 		}
+		if err := o.UpdateTradeState(tradeState); err != nil {
+			return nil, err
+		}
+	}
 
-		refundState := o.RefundState
-		if tradeState == enums.TRADE_STATE_REFUND {
-			_refundState, err := w.MustGetTrader(o.AppName, o.TradeProvider).GetRefundState(tradeNo)
+	if !o.RefundState.IsStable(o.TradeState) {
+		// refundState := o.RefundState
+		if o.TradeState == enums.TRADE_STATE_REFUND {
+			refundState, err := w.MustGetTrader(o.AppName, o.TradeProvider).GetRefundState(tradeNo)
 			if err != nil {
 				return nil, errors.WithStack(err)
 			}
-			refundState = _refundState
+			if err := o.UpdateRefundState(refundState); err != nil {
+				return nil, err
+			}
+			o.UpdateRefundState(refundState)
 		}
-
-		o.UpdateStates(tradeState, refundState)
 	}
+
 	return o, nil
+
 }
 
 func (w *OrderService) getOrderCore(tradeNo string) (*models.OrderCore, error) {
@@ -179,6 +191,7 @@ func (w *OrderService) getOrderCore(tradeNo string) (*models.OrderCore, error) {
 }
 
 func (w *OrderService) RefreshUrl(tradeNo string) (*models.Order, error) {
+	logrus.WithField("trade no", tradeNo).Info("refresh url")
 	o, err := models.FindOrderByTradeNo(tradeNo)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -200,6 +213,7 @@ func (w *OrderService) RefreshUrl(tradeNo string) (*models.Order, error) {
 }
 
 func (w *OrderService) Refund(tradeNo string, req RefundReq) (*models.OrderCore, error) {
+	logrus.WithField("trade no", tradeNo).Info("refund order")
 	o, err := models.FindOrderByTradeNo(tradeNo)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -207,10 +221,12 @@ func (w *OrderService) Refund(tradeNo string, req RefundReq) (*models.OrderCore,
 	if err = w.MustGetTrader(o.AppName, o.TradeProvider).Refund(o.TradeNo, req); err != nil {
 		return nil, errors.WithStack(err)
 	}
+	o.TradeState = enums.TRADE_STATE_REFUND
 	return w.getOrderCore(tradeNo)
 }
 
 func (w *OrderService) Close(tradeNo string) (*models.OrderCore, error) {
+	logrus.WithField("trade no", tradeNo).Info("close order")
 	o, err := models.FindOrderByTradeNo(tradeNo)
 	if err != nil {
 		return nil, errors.WithStack(err)
