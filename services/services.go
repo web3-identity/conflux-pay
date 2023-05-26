@@ -42,6 +42,7 @@ func Init() {
 func StartTasks() {
 	go InitCloseOrderTask()
 	go RunNotifyTask()
+	go StartCmbTransTracker()
 }
 
 // 交易号生成规则

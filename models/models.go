@@ -49,6 +49,7 @@ func ConnectDB() {
 	db.AutoMigrate(&Order{})
 	db.AutoMigrate(&WechatOrderDetail{})
 	db.AutoMigrate(&WechatRefundDetail{})
+	db.AutoMigrate(&CmbRecord{})
 }
 
 func GetDB() *gorm.DB {
