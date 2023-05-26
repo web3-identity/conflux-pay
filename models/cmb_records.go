@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"strconv"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 )
 
 type CmbRecord struct {
+	BaseModel
 	AccNbr string  `gorm:"type:varchar(35);not null"`
 	DmaNbr string  `gorm:"type:varchar(20);not null"`             // sub unit number
 	DmaNam string  `gorm:"type:varchar(82)"`                      // sub unit name
@@ -70,4 +72,64 @@ func ConvertUnitAccountTransDailyResponseToCmbRecords(res cmb_models.UnitAccount
 		})
 	}
 	return records
+}
+
+func isValidDateFormat(input string) bool {
+	_, err := time.Parse("20060102", input)
+	return err == nil
+}
+
+func GetCmbRecords(unitAccountNbr string, transactionDate string, transactionDirection string, limit, offset int) (*[]CmbRecord, error) {
+
+	tmp := db
+	// do Date Filter
+	if transactionDate != "" {
+		if !isValidDateFormat(transactionDate) {
+			return nil, errors.New("invalid transaction date, requires 20060102")
+		}
+		tmp = tmp.Where("trx_dat = ?", transactionDate)
+	}
+	if transactionDirection != "" {
+		if transactionDirection != "C" && transactionDirection != "D" {
+			return nil, errors.New("invalid transaction direction, requires C or D")
+		}
+		tmp = tmp.Where("trx_dir = ?", transactionDirection)
+	}
+	if unitAccountNbr != "" {
+		tmp = tmp.Where("dma_nbr = ?", unitAccountNbr)
+	}
+
+	var records *[]CmbRecord
+	err := tmp.
+		Order("id DESC").
+		Limit(limit).
+		Offset(offset).
+		Find(&records).
+		Error
+	return records, err
+}
+
+func GetTodayAndYesterdayRecords(unitAccountNbr string, transactionDirection string, limit, offset int) (*[]CmbRecord, error) {
+
+	tmp := db.Table("cmb_records")
+	// do Date Filter
+	tmp = tmp.Where("trx_dat = ? or trx_dat = ?", time.Now().Format("20060102"), (time.Now().AddDate(0, 0, -1)).Format("20060102"))
+	if transactionDirection != "" {
+		if transactionDirection != "C" && transactionDirection != "D" {
+			return nil, errors.New("invalid transaction direction, requires C or D")
+		}
+		tmp = tmp.Where("trx_dir = ?", transactionDirection)
+	}
+	if unitAccountNbr != "" {
+		tmp = tmp.Where("dma_nbr = ?", unitAccountNbr)
+	}
+
+	var records *[]CmbRecord
+	err := tmp.
+		Order("id DESC").
+		Limit(limit).
+		Offset(offset).
+		Find(&records).
+		Error
+	return records, err
 }

@@ -34,7 +34,13 @@ func SetupRoutes(router *gin.Engine) {
 			// 	alipay.GET("/:trade_no", ctrl.GetOrder)
 			// }
 		}
-
+		cmb := api.Group("cmb")
+		{
+			cmb.GET("/history", controllers.QueryCmbRecords)
+			cmb.GET("/history/recent", controllers.QueryRecentCmbRecords)
+			cmb.POST("/unit-account", controllers.AddUnitAccount)
+			cmb.POST("/unit-account/relation", controllers.SetUnitAccountRelation)
+		}
 	}
 }
 
