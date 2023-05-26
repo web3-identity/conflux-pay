@@ -180,7 +180,7 @@ func (client *CmbClient) SetUnitAccountRelationWrapper(unitAccountNbr, relatedBa
 	yurref := cmb_helper.GenYurref()
 
 	// Y: refuse
-	res, err := unit_manager.SetUnitAccountRelation(client.UserId, client.Sm4Key, client.Sm2PrivateKey, client.UnitManagerBusmod, client.BbkNbr, client.AccNbr, unitAccountNbr, "Y", relatedBankAccount, yurref)
+	res, err := unit_manager.SetUnitAccountRelation(client.UserId, client.Sm4Key, client.Sm2PrivateKey, client.UnitManagerBusmod, client.BbkNbr, client.AccNbr, unitAccountNbr, "R", relatedBankAccount, yurref)
 	if err != nil {
 		return nil, err
 	}
