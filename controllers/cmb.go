@@ -20,6 +20,16 @@ type SetUnitAccountRelationReq struct {
 	BankAccountNbr string `json:"bank_account_nbr" binding:"required"`
 }
 
+//	@Tags			Cmb
+//	@ID				AddUnitAccount
+//	@Summary		Add a unit account
+//	@Description	Add a unit account
+//	@Produce		json
+//	@Param			add_unit_account_req	body	controllers.AddUnitAccountReq	true	"add_unit_account_req"
+//	@Success		200
+//	@Failure		400	{object}	cns_errors.RainbowErrorDetailInfo	"Invalid request"
+//	@Failure		500	{object}	cns_errors.RainbowErrorDetailInfo	"Internal Server error"
+//	@Router			/cmb/unit-account [post]
 func AddUnitAccount(c *gin.Context) {
 	req := &AddUnitAccountReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -29,12 +39,22 @@ func AddUnitAccount(c *gin.Context) {
 	cmbClient := utils.GetDefaultCmbClient()
 	_, err := cmbClient.AddUnitAccountV1Wrapper(req.UnitAccountName, req.UnitAccountNbr)
 	if err != nil {
-		ginutils.RenderRespError(c, err, pay_errors.ERR_BUSINESS_COMMON)
+		ginutils.RenderRespError(c, err, pay_errors.ERR_INTERNAL_SERVER_COMMON)
 		return
 	}
 	ginutils.RenderRespOK(c, nil)
 }
 
+//	@Tags			Cmb
+//	@ID				SetUnitAccountRelation
+//	@Summary		Set a related bank account of a unit account
+//	@Description	Set a related bank account of a unit account
+//	@Produce		json
+//	@Param			set_unit_account_relation_req	body	controllers.SetUnitAccountRelationReq	true	"set_unit_account_relation_req"
+//	@Success		200
+//	@Failure		400	{object}	cns_errors.RainbowErrorDetailInfo	"Invalid request"
+//	@Failure		500	{object}	cns_errors.RainbowErrorDetailInfo	"Internal Server error"
+//	@Router			/cmb/unit-account/relation [post]
 func SetUnitAccountRelation(c *gin.Context) {
 	req := &SetUnitAccountRelationReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -44,12 +64,23 @@ func SetUnitAccountRelation(c *gin.Context) {
 	cmbClient := utils.GetDefaultCmbClient()
 	_, err := cmbClient.SetUnitAccountRelationWrapper(req.UnitAccountNbr, req.BankAccountNbr)
 	if err != nil {
-		ginutils.RenderRespError(c, err, pay_errors.ERR_INVALID_REQUEST_COMMON)
+		ginutils.RenderRespError(c, err, pay_errors.ERR_INTERNAL_SERVER_COMMON)
 		return
 	}
 	ginutils.RenderRespOK(c, nil)
 }
 
+//	@Tags			Cmb
+//	@ID				QueryRecentCmbRecords
+//	@Summary		查询昨天和今天汇入的交易
+//	@Description	查询昨天和今天汇入的交易
+//	@Produce		json
+//	@Param			limit	query		int	true	"limit"
+//	@Param			offset	query		int	true	"offset"
+//	@Success		200		{array}		models.CmbRecord
+//	@Failure		400		{object}	cns_errors.RainbowErrorDetailInfo	"Invalid request"
+//	@Failure		500		{object}	cns_errors.RainbowErrorDetailInfo	"Internal Server error"
+//	@Router			/cmb/history/recent [get]
 func QueryRecentCmbRecords(c *gin.Context) {
 	limit, err := strconv.Atoi(c.Query("limit"))
 	if err != nil {
@@ -65,12 +96,26 @@ func QueryRecentCmbRecords(c *gin.Context) {
 	records, err := models.GetTodayAndYesterdayRecords("", "C", limit, offset)
 
 	if err != nil {
-		ginutils.RenderRespError(c, err, pay_errors.ERR_INVALID_REQUEST_COMMON)
+		ginutils.RenderRespError(c, err, pay_errors.ERR_INTERNAL_SERVER_COMMON)
 		return
 	}
 	ginutils.RenderRespOK(c, records)
 }
 
+//	@Tags			Cmb
+//	@ID				QueryHistoryCmbRecords
+//	@Summary		查询历史交易
+//	@Description	查询历史交易
+//	@Produce		json
+//	@Param			limit					query		int		true	"limit"
+//	@Param			offset					query		int		true	"offset"
+//	@Param			unit_account_nbr		query		string	true	"specified unit account number"
+//	@Param			transaction_date		query		string	true	"specified date, e.g. 20230523"
+//	@Param			transaction_direction	query		string	true	"transaction direction, C for recieve and D for out"
+//	@Success		200						{array}		models.CmbRecord
+//	@Failure		400						{object}	cns_errors.RainbowErrorDetailInfo	"Invalid request"
+//	@Failure		500						{object}	cns_errors.RainbowErrorDetailInfo	"Internal Server error"
+//	@Router			/cmb/history [get]
 func QueryCmbRecords(c *gin.Context) {
 	limit, err := strconv.Atoi(c.Query("limit"))
 	if err != nil {
@@ -85,7 +130,7 @@ func QueryCmbRecords(c *gin.Context) {
 	}
 	records, err := models.GetCmbRecords(c.Query("unit_account_nbr"), c.Query("transaction_date"), c.Query("transaction_direction"), limit, offset)
 	if err != nil {
-		ginutils.RenderRespError(c, err, pay_errors.ERR_INVALID_REQUEST_COMMON)
+		ginutils.RenderRespError(c, err, pay_errors.ERR_INTERNAL_SERVER_COMMON)
 		return
 	}
 	ginutils.RenderRespOK(c, records)
