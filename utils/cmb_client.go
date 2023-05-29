@@ -61,6 +61,9 @@ func init() {
 
 func (client *CmbClient) GetUnitAccountTransHistoryListWrapper(dmanbr, begdat, enddat, ctnkey string) (*cmb_models.UnitAccountTransHistoryResponse, error) {
 	res, err := unit_manager.GetUnitAccountTransHistoryList(client.UserId, client.Sm4Key, client.Sm2PrivateKey, client.AccNbr, dmanbr, begdat, enddat, ctnkey)
+	if err != nil {
+		return nil, err
+	}
 	if res.Response.Head.Resultcode != SUCCESSCODE {
 		return nil, errors.New(res.Response.Head.Resultmsg)
 	}
@@ -69,6 +72,9 @@ func (client *CmbClient) GetUnitAccountTransHistoryListWrapper(dmanbr, begdat, e
 
 func (client *CmbClient) GetUnitAccountTransDailyListWrapper(dmanbr, ctnkey string) (*cmb_models.UnitAccountTransDailyResponse, error) {
 	res, err := unit_manager.GetUnitAccountTransList(client.UserId, client.Sm4Key, client.Sm2PrivateKey, client.AccNbr, dmanbr, ctnkey)
+	if err != nil {
+		return nil, err
+	}
 	if res.Response.Head.Resultcode != SUCCESSCODE {
 		return nil, errors.New(res.Response.Head.Resultmsg)
 	}

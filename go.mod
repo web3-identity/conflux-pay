@@ -72,4 +72,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-// replace github.com/ahKevinXy/go-cmb => ../go-cmb
+replace github.com/ahKevinXy/go-cmb => github.com/darwintree/go-cmb v1.1.2-fix
