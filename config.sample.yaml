@@ -19,6 +19,16 @@ apps:
     appId: rainbow-appid
     appSecret: rainbow-app-secret
     appInternalID: 2
+  cmb:
+    appId: cmb-appid
+    appInternalID: 3
+    apiServer: "http://cdctest.cmburl.cn/cdcserver/api/v2"
+    userId: xxx
+    sm4Key: xxx
+    sm2PrivateKey: xxx
+    accNbr: xxx
+    bbkNbr: xxx
+    unitManagerBusmod: xxx
 inNotify: # 接受 微信官方支付服务 的通知
   wechat:
     payNotifyUrlBase: http://127.0.0.1:8080
