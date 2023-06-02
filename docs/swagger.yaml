@@ -7,6 +7,26 @@ definitions:
       message:
         type: string
     type: object
+  controllers.AddUnitAccountReq:
+    properties:
+      unit_account_name:
+        type: string
+      unit_account_nbr:
+        type: string
+    required:
+    - unit_account_name
+    - unit_account_nbr
+    type: object
+  controllers.SetUnitAccountRelationReq:
+    properties:
+      bank_account_nbr:
+        type: string
+      unit_account_nbr:
+        type: string
+    required:
+    - bank_account_nbr
+    - unit_account_nbr
+    type: object
   gorm.DeletedAt:
     properties:
       time:
@@ -14,6 +34,55 @@ definitions:
       valid:
         description: Valid is true if Time is not NULL
         type: boolean
+    type: object
+  models.CmbRecord:
+    properties:
+      accNbr:
+        type: string
+      autFlg:
+        description: useless
+        type: string
+      ccyNbr:
+        description: expected to be rmb
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      dmaNam:
+        description: sub unit name
+        type: string
+      dmaNbr:
+        description: sub unit number
+        type: string
+      id:
+        type: integer
+      narInn:
+        description: useless
+        type: string
+      rpyAcc:
+        description: useless
+        type: string
+      rpyNam:
+        description: useless
+        type: string
+      trxAmt:
+        type: number
+      trxDat:
+        type: string
+      trxDir:
+        description: tx direction
+        type: string
+      trxNbr:
+        description: unique
+        type: string
+      trxTim:
+        type: string
+      trxTxt:
+        description: txt that sender appended
+        type: string
+      updated_at:
+        type: string
     type: object
   models.Order:
     properties:
@@ -169,6 +238,145 @@ info:
   title: Rainbow-API
   version: "1.0"
 paths:
+  /cmb/history:
+    get:
+      description: 查询历史交易
+      operationId: QueryHistoryCmbRecords
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        required: true
+        type: integer
+      - description: specified unit account number
+        in: query
+        name: unit_account_nbr
+        required: true
+        type: string
+      - description: specified date, e.g. 20230523
+        in: query
+        name: transaction_date
+        required: true
+        type: string
+      - description: transaction direction, C for recieve and D for out
+        in: query
+        name: transaction_direction
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.CmbRecord'
+            type: array
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+      summary: 查询历史交易
+      tags:
+      - Cmb
+  /cmb/history/recent:
+    get:
+      description: 查询昨天和今天汇入的交易
+      operationId: QueryRecentCmbRecords
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.CmbRecord'
+            type: array
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+      summary: 查询昨天和今天汇入的交易
+      tags:
+      - Cmb
+  /cmb/unit-account:
+    post:
+      description: Add a unit account
+      operationId: AddUnitAccount
+      parameters:
+      - description: add_unit_account_req
+        in: body
+        name: add_unit_account_req
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.AddUnitAccountReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+      summary: Add a unit account
+      tags:
+      - Cmb
+  /cmb/unit-account/relation:
+    post:
+      description: Set a related bank account of a unit account
+      operationId: SetUnitAccountRelation
+      parameters:
+      - description: set_unit_account_relation_req
+        in: body
+        name: set_unit_account_relation_req
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.SetUnitAccountRelationReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+        "500":
+          description: Internal Server error
+          schema:
+            $ref: '#/definitions/cns_errors.RainbowErrorDetailInfo'
+      summary: Set a related bank account of a unit account
+      tags:
+      - Cmb
   /orders:
     post:
       description: make order
