@@ -40,12 +40,12 @@ func todayString() string {
 
 func GetDefaultCmbClient() *CmbClient {
 	return &CmbClient{
-		UserId:            viper.GetString("apps.cmb.userId"),
-		Sm4Key:            viper.GetString("apps.cmb.sm4Key"),
-		Sm2PrivateKey:     viper.GetString("apps.cmb.sm2PrivateKey"),
-		AccNbr:            viper.GetString("apps.cmb.accNbr"),
-		BbkNbr:            viper.GetString("apps.cmb.bbkNbr"),
-		UnitManagerBusmod: viper.GetString("apps.cmb.unitManagerBusmod"),
+		UserId:            viper.GetString("company.cmb.userId"),
+		Sm4Key:            viper.GetString("company.cmb.sm4Key"),
+		Sm2PrivateKey:     viper.GetString("company.cmb.sm2PrivateKey"),
+		AccNbr:            viper.GetString("company.cmb.accNbr"),
+		BbkNbr:            viper.GetString("company.cmb.bbkNbr"),
+		UnitManagerBusmod: viper.GetString("company.cmb.unitManagerBusmod"),
 	}
 }
 
@@ -53,7 +53,7 @@ func init() {
 	config.Init()
 	cmb_config.InitConfig(
 		"",
-		viper.GetString("apps.cmb.apiServer"),
+		viper.GetString("company.cmb.apiServer"),
 		"",
 		"",
 	)

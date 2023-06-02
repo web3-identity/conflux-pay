@@ -9,16 +9,6 @@ company:
   alipay:
     privateKey:   my-priv-key
     alipayPublicKey: alipay-pub-key
-apps:
-  cns:
-    appIdAlipay: appid-alipay
-    appIdWechat: appid-wechat
-    appSecretHash: cns-app-secret
-    appInternalID: 1
-  rainbow:
-    appId: rainbow-appid
-    appSecret: rainbow-app-secret
-    appInternalID: 2
   cmb:
     appId: cmb-appid
     appInternalID: 3
@@ -29,6 +19,16 @@ apps:
     accNbr: xxx
     bbkNbr: xxx
     unitManagerBusmod: xxx
+apps:
+  cns:
+    appIdAlipay: appid-alipay
+    appIdWechat: appid-wechat
+    appSecretHash: cns-app-secret
+    appInternalID: 1
+  rainbow:
+    appId: rainbow-appid
+    appSecret: rainbow-app-secret
+    appInternalID: 2
 inNotify: # 接受 微信官方支付服务 的通知
   wechat:
     payNotifyUrlBase: http://127.0.0.1:8080
