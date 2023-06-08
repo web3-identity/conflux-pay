@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 	"github.com/web3-identity/conflux-pay/models"
 	pay_errors "github.com/web3-identity/conflux-pay/pay_errors"
 	"github.com/web3-identity/conflux-pay/utils"
@@ -15,9 +16,17 @@ type AddUnitAccountReq struct {
 	UnitAccountNbr  string `json:"unit_account_nbr" binding:"required"`
 }
 
+type AddUnitAccountResult struct {
+	FullUnitAccountNbr string `json:"full_unit_account_nbr" binding:"required"`
+}
+
 type SetUnitAccountRelationReq struct {
 	UnitAccountNbr string `json:"unit_account_nbr" binding:"required"`
 	BankAccountNbr string `json:"bank_account_nbr" binding:"required"`
+}
+
+type SetUnitAccountRelationResult struct {
+	Code int `json:"code" binding:"required"`
 }
 
 //	@Tags			Cmb
@@ -26,7 +35,7 @@ type SetUnitAccountRelationReq struct {
 //	@Description	Add a unit account
 //	@Produce		json
 //	@Param			add_unit_account_req	body	controllers.AddUnitAccountReq	true	"add_unit_account_req"
-//	@Success		200
+//	@Success		200 {object}    AddUnitAccountResult
 //	@Failure		400	{object}	cns_errors.RainbowErrorDetailInfo	"Invalid request"
 //	@Failure		500	{object}	cns_errors.RainbowErrorDetailInfo	"Internal Server error"
 //	@Router			/cmb/unit-account [post]
@@ -42,7 +51,10 @@ func AddUnitAccount(c *gin.Context) {
 		ginutils.RenderRespError(c, err, pay_errors.ERR_INTERNAL_SERVER_COMMON)
 		return
 	}
-	ginutils.RenderRespOK(c, nil)
+	rtn := &AddUnitAccountResult{
+		FullUnitAccountNbr: (viper.GetString("apps.cmb.accNbr") + req.UnitAccountNbr),
+	}
+	ginutils.RenderRespOK(c, rtn)
 }
 
 //	@Tags			Cmb
@@ -51,7 +63,7 @@ func AddUnitAccount(c *gin.Context) {
 //	@Description	Set a related bank account of a unit account
 //	@Produce		json
 //	@Param			set_unit_account_relation_req	body	controllers.SetUnitAccountRelationReq	true	"set_unit_account_relation_req"
-//	@Success		200
+//	@Success		200 {object}    SetUnitAccountRelationResult
 //	@Failure		400	{object}	cns_errors.RainbowErrorDetailInfo	"Invalid request"
 //	@Failure		500	{object}	cns_errors.RainbowErrorDetailInfo	"Internal Server error"
 //	@Router			/cmb/unit-account/relation [post]
@@ -67,7 +79,9 @@ func SetUnitAccountRelation(c *gin.Context) {
 		ginutils.RenderRespError(c, err, pay_errors.ERR_INTERNAL_SERVER_COMMON)
 		return
 	}
-	ginutils.RenderRespOK(c, nil)
+	ginutils.RenderRespOK(c, &SetUnitAccountRelationResult{
+		Code: 200,
+	})
 }
 
 //	@Tags			Cmb
