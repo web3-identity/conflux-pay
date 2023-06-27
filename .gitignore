@@ -4,3 +4,4 @@ config.yaml
 .DS_Store
 config_prod.yaml
 config_dev.yaml
+conflux-pay

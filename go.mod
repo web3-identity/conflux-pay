@@ -3,7 +3,7 @@ module github.com/web3-identity/conflux-pay
 go 1.17
 
 require (
-	github.com/ahKevinXy/go-cmb v1.1.2
+	github.com/ahKevinXy/go-cmb v1.1.3
 	github.com/fatih/color v1.13.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/magiconair/properties v1.8.6
@@ -71,5 +71,3 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/ahKevinXy/go-cmb => github.com/darwintree/go-cmb v1.1.2-fix

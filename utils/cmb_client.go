@@ -8,6 +8,7 @@ import (
 	"github.com/ahKevinXy/go-cmb/handler/unit_manager"
 	cmb_helper "github.com/ahKevinXy/go-cmb/help"
 	cmb_models "github.com/ahKevinXy/go-cmb/models"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/web3-identity/conflux-pay/config"
 	"github.com/web3-identity/conflux-pay/models"
@@ -64,6 +65,7 @@ func (client *CmbClient) GetUnitAccountTransHistoryListWrapper(dmanbr, begdat, e
 	if err != nil {
 		return nil, err
 	}
+	logrus.WithField("rawData", res).Info("GetUnitAccountTransHistoryList")
 	if res.Response.Head.Resultcode != SUCCESSCODE {
 		return nil, errors.New(res.Response.Head.Resultmsg)
 	}
@@ -75,6 +77,7 @@ func (client *CmbClient) GetUnitAccountTransDailyListWrapper(dmanbr, ctnkey stri
 	if err != nil {
 		return nil, err
 	}
+	logrus.WithField("rawData", res).Info("GetUnitAccountTransList")
 	if res.Response.Head.Resultcode != SUCCESSCODE {
 		return nil, errors.New(res.Response.Head.Resultmsg)
 	}
@@ -162,6 +165,7 @@ func (client *CmbClient) AddUnitAccountV1Wrapper(unitAccountName, unitAccountNbr
 	if err != nil {
 		return nil, err
 	}
+	logrus.WithField("rawData", res).Info("AddUnitAccountV1")
 	if res.Response.Head.Resultcode != SUCCESSCODE {
 		return nil, errors.New(res.Response.Head.Resultmsg)
 	}
@@ -176,6 +180,7 @@ func (client *CmbClient) CloseUnitAccountWrapper(unitAccountNbr string) (*cmb_mo
 	if err != nil {
 		return nil, err
 	}
+	logrus.WithField("rawData", res).Info("CloseUnitAccount")
 	if res.Response.Head.Resultcode != SUCCESSCODE {
 		return nil, errors.New(res.Response.Head.Resultmsg)
 	}
@@ -190,6 +195,7 @@ func (client *CmbClient) SetUnitAccountRelationWrapper(unitAccountNbr, relatedBa
 	if err != nil {
 		return nil, err
 	}
+	logrus.WithField("rawData", res).Info("SetUnitAccountRelation")
 	if res.Response.Head.Resultcode != SUCCESSCODE {
 		return nil, errors.New(res.Response.Head.Resultmsg)
 	}
