@@ -148,6 +148,7 @@ func (client *CmbClient) AutoGetRecentTransactionHistory() (*[]models.CmbRecord,
 	if err != nil {
 		return nil, err
 	}
+	time.Sleep(10 * time.Second) // add sleep to avoid cmb api rate limit
 	resToday, err := client.AutoGetAllUnitAccountsTransDailyList()
 	if err != nil {
 		return nil, err
